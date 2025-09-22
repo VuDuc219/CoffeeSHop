@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:myapp/consts/firebase_consts.dart'; // Added the missing import
+import 'package:myapp/consts/firebase_consts.dart';
 
 class HomeController extends GetxController {
   @override

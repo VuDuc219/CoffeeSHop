@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:myapp/consts/consts.dart';
 import 'package:myapp/controllers/auth_controller.dart';
+import 'package:myapp/controllers/cart_controller.dart';
 import 'package:myapp/controllers/profile_controller.dart';
 import 'package:myapp/views/auth_screen/login_screen.dart';
 import 'package:myapp/views/chat_screen/chat_screen.dart';
@@ -18,12 +19,14 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   late final AuthController authController;
   late final ProfileController profileController;
+  late final CartController cartController;
 
   @override
   void initState() {
     super.initState();
     authController = Get.find<AuthController>();
     profileController = Get.find<ProfileController>();
+    cartController = Get.find<CartController>();
   }
 
   @override
@@ -44,7 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               _buildProfileHeader(context, profileController),
               const SizedBox(height: 20),
-              _buildDetailsCards(context, profileController),
+              _buildDetailsCards(context, profileController, cartController),
               const SizedBox(height: 30),
               _buildMenuOptions(
                 context,
@@ -116,31 +119,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildDetailsCards(
     BuildContext context,
-    ProfileController controller,
+    ProfileController pController,
+    CartController cController,
   ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Obx(
-        () => Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            detailsCard(
-              count: controller.cartCount.value.toString(),
-              title: "In your cart",
-              width: context.screenWidth / 3.5,
-            ),
-            detailsCard(
-              count: controller.wishlistCount.value.toString(),
-              title: "In your wishlist",
-              width: context.screenWidth / 3.5,
-            ),
-            detailsCard(
-              count: controller.orderCount.value.toString(),
-              title: "You ordered",
-              width: context.screenWidth / 3.5,
-            ),
-          ],
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Obx(() => detailsCard(
+                count: cController.products.length.toString(),
+                title: "In your cart",
+                width: context.screenWidth / 3.5,
+              )),
+          Obx(() => detailsCard(
+                count: pController.wishlistCount.value.toString(),
+                title: "In your wishlist",
+                width: context.screenWidth / 3.5,
+              )),
+          Obx(() => detailsCard(
+                count: pController.orderCount.value.toString(),
+                title: "You ordered",
+                width: context.screenWidth / 3.5,
+              )),
+        ],
       ),
     );
   }
@@ -193,7 +195,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(fontFamily: semibold, color: darkFontGrey),
               ),
               onTap: () {
-                // FIXED: Changed to use named parameters for ChatScreen
                 Get.to(
                   () => ChatScreen(
                     friendName: "admin",
@@ -210,7 +211,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(fontFamily: semibold, color: darkFontGrey),
               ),
               onTap: () async {
-                // FIXED: Removed unnecessary context from signOutMethod call
                 await authController.signOutMethod();
                 Get.offAll(() => const LoginScreen());
               },

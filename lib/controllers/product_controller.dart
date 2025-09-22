@@ -7,8 +7,8 @@ class ProductController extends GetxController {
   var quantity = 1.obs; // Default quantity to 1
   var sizeIndex = 0.obs;
   var totalPrice = 0.obs;
-  var priceList = <int>[].obs; // To store the list of prices for the product
-  var userRating = 0.0.obs; // To store the user's rating selection
+  var priceList = <int>[].obs;
+  var userRating = 0.0.obs;
 
   // Add to cart method
   addToCart({
@@ -34,25 +34,21 @@ class ProductController extends GetxController {
     }
   }
 
-  // Initialize or reset the controller's state when viewing a new product
   void initData(List<dynamic> prices) {
-    quantity.value = 1; // Reset quantity to 1
-    sizeIndex.value = 0; // Reset to the first size
-    userRating.value = 0.0; // Reset user rating
-    // Convert the dynamic list of prices (e.g., ["40000", "50000"]) to a list of integers
+    quantity.value = 1;
+    sizeIndex.value = 0;
+    userRating.value = 0.0;
     priceList.value = prices
         .map((p) => int.tryParse(p.toString()) ?? 0)
         .toList();
-    calculateTotalPrice(); // Calculate the initial total price
+    calculateTotalPrice();
   }
 
-  // Called when the user selects a different size chip
   void changeSizeIndex(int index) {
     sizeIndex.value = index;
-    calculateTotalPrice(); // Recalculate the price for the new size
+    calculateTotalPrice();
   }
 
-  // Increases the quantity, up to the available stock
   void increaseQuantity(int availableStock) {
     if (quantity.value < availableStock) {
       quantity.value++;
@@ -60,7 +56,6 @@ class ProductController extends GetxController {
     }
   }
 
-  // Decreases the quantity, but not below 1
   void decreaseQuantity() {
     if (quantity.value > 1) {
       quantity.value--;
@@ -68,17 +63,14 @@ class ProductController extends GetxController {
     }
   }
 
-  // Calculates the total price based on the selected size and quantity
   void calculateTotalPrice() {
-    // Ensure the price list is not empty and the index is valid
     if (priceList.isNotEmpty && sizeIndex.value < priceList.length) {
       totalPrice.value = priceList[sizeIndex.value] * quantity.value;
     } else {
-      totalPrice.value = 0; // Default to 0 if something is wrong
+      totalPrice.value = 0;
     }
   }
 
-  // Updates the user's rating
   void updateUserRating(double rating) {
     userRating.value = rating;
   }

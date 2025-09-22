@@ -8,15 +8,12 @@ import 'package:path/path.dart';
 class ProfileController extends GetxController {
   var isLoading = false.obs;
 
-  // Observable profile data
   final Rx<String> userName = ''.obs;
   final Rx<String> userEmail = ''.obs;
   final Rx<String> profileImageUrl = ''.obs;
-  final Rx<int> cartCount = 0.obs;
   final Rx<int> wishlistCount = 0.obs;
   final Rx<int> orderCount = 0.obs;
 
-  // for image picking
   var pickedImagePath = ''.obs;
 
   @override
@@ -25,7 +22,6 @@ class ProfileController extends GetxController {
     loadUserData();
   }
 
-  // Load user data from Firestore
   Future<void> loadUserData() async {
     isLoading.value = true;
     final user = auth.currentUser;
@@ -42,8 +38,6 @@ class ProfileController extends GetxController {
           profileImageUrl.value = data['imageUrl'] ?? '';
         }
 
-        // Fetch counts
-        cartCount.value = await FirestoreServices.getCartCount(user.uid);
         wishlistCount.value = await FirestoreServices.getWishlistCount(user.uid);
         orderCount.value = await FirestoreServices.getOrderCount(user.uid);
 
@@ -53,11 +47,10 @@ class ProfileController extends GetxController {
         isLoading.value = false;
       }
     } else {
-      isLoading.value = false; // Not logged in
+      isLoading.value = false;
     }
   }
 
-  // Pick an image from gallery
   Future<void> pickImage() async {
     try {
       final pickedFile = await ImagePicker().pickImage(
@@ -73,7 +66,6 @@ class ProfileController extends GetxController {
     }
   }
 
-  // Upload profile picture to Firebase Storage
   Future<void> uploadProfilePicture() async {
     if (pickedImagePath.value.isEmpty) return;
 
@@ -95,7 +87,7 @@ class ProfileController extends GetxController {
         'imageUrl': url,
       });
 
-      profileImageUrl.value = url; // Update the UI immediately
+      profileImageUrl.value = url;
       Get.snackbar("Success", "Profile picture updated!");
     } catch (e) {
       Get.snackbar("Error", "Failed to upload image: $e");
@@ -104,7 +96,6 @@ class ProfileController extends GetxController {
     }
   }
 
-  // Update user name
   Future<void> updateProfile({required String newName}) async {
     final user = auth.currentUser;
     if (user == null) return;
@@ -115,7 +106,7 @@ class ProfileController extends GetxController {
         'name': newName,
       });
 
-      userName.value = newName; // Update UI
+      userName.value = newName;
       Get.snackbar("Success", "Profile name updated!");
     } catch (e) {
       Get.snackbar("Error", "Failed to update profile: $e");

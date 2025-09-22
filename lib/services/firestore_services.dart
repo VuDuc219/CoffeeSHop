@@ -1,7 +1,6 @@
 import 'package:myapp/consts/firebase_consts.dart';
 
 class FirestoreServices {
-  //get users data
   static getUser(uid) {
     return firestore
         .collection(usersCollection)
@@ -9,7 +8,6 @@ class FirestoreServices {
         .snapshots();
   }
 
-  // get products by category
   static getProductsByCategory(String category) {
     return firestore
         .collection(productsCollection)
@@ -17,7 +15,6 @@ class FirestoreServices {
         .snapshots();
   }
 
-  // get cart items
   static getCart(uid) {
     return firestore
         .collection(cartCollection)
@@ -25,17 +22,8 @@ class FirestoreServices {
         .snapshots();
   }
 
-  // delete item from cart
   static deleteDocument(docId) {
     return firestore.collection(cartCollection).doc(docId).delete();
-  }
-
-  static Future<int> getCartCount(String uid) async {
-    var snapshot = await firestore
-        .collection(cartCollection)
-        .where('added_by', isEqualTo: uid)
-        .get();
-    return snapshot.docs.length;
   }
 
   static Future<int> getWishlistCount(String uid) async {
@@ -54,7 +42,6 @@ class FirestoreServices {
     return snapshot.docs.length;
   }
 
-  // Get all chat messages for a specific chat
   static getChatMessages(String docId) {
     return firestore
         .collection(chatsCollection)
@@ -64,12 +51,10 @@ class FirestoreServices {
         .snapshots();
   }
 
-  // Get all conversations for the current user
   static getAllMessages() {
-    // Assuming 'users' field is an array of participant UIDs
     return firestore
         .collection(chatsCollection)
-        .where('users', arrayContains: auth.currentUser!.uid) // CORRECTED
+        .where('users', arrayContains: auth.currentUser!.uid)
         .snapshots();
   }
 }

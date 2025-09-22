@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:myapp/controllers/cart_controller.dart';
+import 'package:myapp/controllers/profile_controller.dart';
 import 'package:myapp/views/cart_screen/cart_screen.dart';
 import 'package:myapp/views/category_screen/category_screen.dart';
 import 'package:myapp/views/home_screen/home_screen.dart';
@@ -13,6 +16,13 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    Get.put(ProfileController());
+    Get.put(CartController());
+  }
 
   static const List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
@@ -30,7 +40,6 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //appBar: AppBar(title: const Text('Home Screen')),
       body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[

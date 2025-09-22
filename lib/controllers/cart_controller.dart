@@ -1,19 +1,43 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:myapp/consts/firebase_consts.dart';
-import 'package:myapp/services/firestore_services.dart';
 
 class CartController extends GetxController {
+  final RxList<DocumentSnapshot> products = <DocumentSnapshot>[].obs;
   var totalP = 0.obs;
 
-  // Calculate total price
-  void calculate(dynamic data) {
+  @override
+  void onInit() {
+    super.onInit();
+    listenToCartChanges();
+  }
+
+  void listenToCartChanges() {
+    final user = auth.currentUser;
+    if (user == null) return;
+
+    firestore
+        .collection(cartCollection)
+        .where('added_by', isEqualTo: user.uid)
+        .snapshots()
+        .listen((snapshot) {
+      products.assignAll(snapshot.docs);
+      calculateTotalPrice();
+    }, onError: (error) {
+      Get.snackbar("Error", "Failed to listen to cart updates: $error");
+    });
+  }
+
+  void calculateTotalPrice() {
     totalP.value = 0;
-    for (var i = 0; i < data.length; i++) {
-      totalP.value = totalP.value + int.parse(data[i]['tprice'].toString());
+    for (var doc in products) {
+      final data = doc.data() as Map<String, dynamic>?;
+      if (data != null && data.containsKey('tprice')) {
+        totalP.value += (data['tprice'] as num).toInt();
+      }
     }
   }
 
-  // Update quantity and total price for an item
   void updateQuantity({required String docId, required int newQuantity, required int unitPrice}) {
     if (newQuantity > 0) {
       firestore.collection(cartCollection).doc(docId).update({
@@ -21,13 +45,11 @@ class CartController extends GetxController {
         'tprice': newQuantity * unitPrice,
       });
     } else {
-      // If quantity drops to 0 or less, delete the item
       deleteItem(docId);
     }
   }
 
-  // Delete an item from the cart
   void deleteItem(String docId) {
-    FirestoreServices.deleteDocument(docId);
+    firestore.collection(cartCollection).doc(docId).delete();
   }
 }
