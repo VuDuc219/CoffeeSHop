@@ -13,7 +13,7 @@ class AuthController extends GetxController {
   var nameController = TextEditingController();
 
   User? get currentUser => auth.currentUser;
-
+  //tefg
   Future<UserCredential?> signupMethod({
     required String email,
     required String password,
