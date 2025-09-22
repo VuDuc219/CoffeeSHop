@@ -13,7 +13,7 @@ class AuthController extends GetxController {
   var nameController = TextEditingController();
 
   User? get currentUser => auth.currentUser;
-  //tefg
+
   Future<UserCredential?> signupMethod({
     required String email,
     required String password,
@@ -59,23 +59,23 @@ class AuthController extends GetxController {
     required String password,
     required String email,
   }) async {
-    // Use the UID of the currently signed-up user
     DocumentReference store = firestore
         .collection(usersCollection)
         .doc(auth.currentUser!.uid);
     await store.set({
-      'id': auth.currentUser!.uid, // Add the user's UID as the id field
+      'id': auth.currentUser!.uid,
       'name': name,
       'password': password,
       'email': email,
-      'imageUrl': '', // Initially empty
+      'imageUrl': '',
       'cart_count': '00',
       'order_count': '00',
       'whishlist_count': '00',
     });
   }
 
-  Future<void> signOutMethod(BuildContext context) async {
+  // FIXED: Removed unused context parameter
+  Future<void> signOutMethod() async {
     try {
       await auth.signOut();
     } catch (e) {

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:myapp/controllers/auth_controller.dart';
-import 'package:myapp/controllers/profile_controller.dart'; // Import ProfileController
+import 'package:myapp/controllers/profile_controller.dart';
+import 'package:myapp/views/admin_screen/home_screen/home.dart';
 import 'package:myapp/views/auth_screen/signup_screen.dart';
 import 'package:myapp/views/home_screen/home.dart';
 import 'package:velocity_x/velocity_x.dart';
@@ -112,10 +113,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   );
 
                   if (userCredential != null) {
-                    // Put ProfileController after successful login
                     Get.put(ProfileController());
                     VxToast.show(context, msg: "Logged in successfully");
-                    Get.offAll(() => const Home());
+
+                    if (_emailController.text == "admin@gmail.com") {
+                      Get.offAll(() => const AdminHome());
+                    } else {
+                      Get.offAll(() => const Home());
+                    }
                   }
                 }
               },

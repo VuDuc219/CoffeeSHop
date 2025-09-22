@@ -53,4 +53,23 @@ class FirestoreServices {
         .get();
     return snapshot.docs.length;
   }
+
+  // Get all chat messages for a specific chat
+  static getChatMessages(String docId) {
+    return firestore
+        .collection(chatsCollection)
+        .doc(docId)
+        .collection(messagesCollection)
+        .orderBy('created_on', descending: false)
+        .snapshots();
+  }
+
+  // Get all conversations for the current user
+  static getAllMessages() {
+    // Assuming 'users' field is an array of participant UIDs
+    return firestore
+        .collection(chatsCollection)
+        .where('users', arrayContains: auth.currentUser!.uid) // CORRECTED
+        .snapshots();
+  }
 }

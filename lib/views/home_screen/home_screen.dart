@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:myapp/consts/consts.dart';
+import 'package:myapp/controllers/home_controller.dart';
 import 'package:myapp/views/widgets_common/home_button.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -20,6 +22,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ADDED: Initialize the controller
+    final controller = Get.put(HomeController());
     final primaryColor = Theme.of(context).primaryColor;
 
     return Container(
@@ -31,6 +35,26 @@ class _HomeScreenState extends State<HomeScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // ADDED: Hello user text, shown only when the name is loaded.
+              Obx(() {
+                return controller.username.value.isEmpty
+                    ? const SizedBox.shrink() // Show nothing if name is not ready
+                    : Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 8, bottom: 12),
+                          child: Text(
+                            "Hello ${controller.username.value}",
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      );
+              }),
+
               // Search and Notification Container
               Container(
                 padding: const EdgeInsets.all(12),

@@ -4,10 +4,10 @@ import 'package:myapp/consts/consts.dart';
 import 'package:myapp/controllers/auth_controller.dart';
 import 'package:myapp/controllers/profile_controller.dart';
 import 'package:myapp/views/auth_screen/login_screen.dart';
+import 'package:myapp/views/chat_screen/chat_screen.dart';
 import 'package:myapp/views/profile_screen/components/details_card.dart';
 import 'package:velocity_x/velocity_x.dart';
 
-// Changed to StatefulWidget to resolve hot reload state issue
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -22,7 +22,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize controllers
     authController = Get.find<AuthController>();
     profileController = Get.find<ProfileController>();
   }
@@ -30,10 +29,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5), // Light background color
+      backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
         child: Obx(() {
-          // Show loading indicator while fetching data
           if (profileController.isLoading.value) {
             return const Center(
               child: CircularProgressIndicator(
@@ -42,24 +40,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             );
           }
 
-          // Main profile UI
           return Column(
             children: [
-              // User profile section
               _buildProfileHeader(context, profileController),
-
               const SizedBox(height: 20),
-
-              // Details cards
               _buildDetailsCards(context, profileController),
-
               const SizedBox(height: 30),
-
-              // Menu options
               _buildMenuOptions(
                 context,
                 authController,
-              ), // Pass context and auth controller
+                profileController.userName.value,
+              ),
             ],
           );
         }),
@@ -73,7 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ) {
     return Container(
       padding: const EdgeInsets.all(20),
-      color: Colors.brown, // Theme color
+      color: Colors.brown,
       child: Row(
         children: [
           Obx(
@@ -123,7 +114,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildDetailsCards(BuildContext context, ProfileController controller) {
+  Widget _buildDetailsCards(
+    BuildContext context,
+    ProfileController controller,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Obx(
@@ -154,6 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildMenuOptions(
     BuildContext context,
     AuthController authController,
+    String currentUserName,
   ) {
     return Expanded(
       child: Container(
@@ -191,12 +186,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const Divider(),
-            const ListTile(
-              leading: Icon(Icons.message_outlined, color: darkFontGrey),
-              title: Text(
+            ListTile(
+              leading: const Icon(Icons.message_outlined, color: darkFontGrey),
+              title: const Text(
                 "Messages",
                 style: TextStyle(fontFamily: semibold, color: darkFontGrey),
               ),
+              onTap: () {
+                // FIXED: Changed to use named parameters for ChatScreen
+                Get.to(
+                  () => ChatScreen(
+                    friendName: "admin",
+                    friendId: "QsoApR4yrPSCqZLOxcagt26k38n2",
+                  ),
+                );
+              },
             ),
             const Divider(),
             ListTile(
@@ -206,9 +210,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(fontFamily: semibold, color: darkFontGrey),
               ),
               onTap: () async {
-                await authController.signOutMethod(
-                  context,
-                ); // Pass context here
+                // FIXED: Removed unnecessary context from signOutMethod call
+                await authController.signOutMethod();
                 Get.offAll(() => const LoginScreen());
               },
             ),
