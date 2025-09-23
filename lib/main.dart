@@ -6,8 +6,6 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // This is the correct way to initialize Firebase for all platforms.
-  // It ensures that all services, including Firestore, can connect reliably.
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,

@@ -22,7 +22,6 @@ class ChatsController extends GetxController {
   void onInit() {
     super.onInit();
     currentId = auth.currentUser!.uid;
-    // FIXED: Used the correct property 'userName' instead of 'name'
     senderName = Get.find<ProfileController>().userName.value;
     createSecureChatRoom();
   }

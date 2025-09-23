@@ -183,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
           controller: controller,
           obscureText: isObscure,
           decoration: InputDecoration(
-            hintText: isObscure ? '********' : 'admin@admin.com',
+            hintText: isObscure ? '********' : 'admin@gmail.com',
             prefixIcon: Icon(icon, color: const Color(0xFF6f4e37)),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.0),

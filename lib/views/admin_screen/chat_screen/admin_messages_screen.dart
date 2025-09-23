@@ -19,9 +19,7 @@ class AdminMessagesScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.brown,
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-        ), // Make back button white
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: firestore
@@ -57,7 +55,6 @@ class AdminMessagesScreen extends StatelessWidget {
               DocumentSnapshot doc = conversations[index];
               Map<String, dynamic> data = doc.data()! as Map<String, dynamic>;
 
-              // --- Determine the other user's ID from the 'users' array ---
               List<dynamic> users = data['users'] ?? [];
               String friendId = users.firstWhere(
                 (id) => id != currentAdminId,

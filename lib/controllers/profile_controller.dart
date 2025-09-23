@@ -38,9 +38,10 @@ class ProfileController extends GetxController {
           profileImageUrl.value = data['imageUrl'] ?? '';
         }
 
-        wishlistCount.value = await FirestoreServices.getWishlistCount(user.uid);
+        wishlistCount.value = await FirestoreServices.getWishlistCount(
+          user.uid,
+        );
         orderCount.value = await FirestoreServices.getOrderCount(user.uid);
-
       } catch (e) {
         Get.snackbar("Error", "Failed to load user data: $e");
       } finally {

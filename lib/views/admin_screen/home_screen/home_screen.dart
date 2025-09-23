@@ -20,8 +20,11 @@ class AdminHomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // FIXED: Replaced non-existent icon with a correct one
-              const Icon(Icons.admin_panel_settings, size: 100, color: Colors.brown),
+              const Icon(
+                Icons.admin_panel_settings,
+                size: 100,
+                color: Colors.brown,
+              ),
               const SizedBox(height: 20),
               const Text(
                 "Welcome, Admin!",

@@ -9,15 +9,16 @@ import 'dart:developer' as developer;
 class CategoryScreen extends StatelessWidget {
   const CategoryScreen({Key? key}) : super(key: key);
 
-  // Function to load and parse the JSON data
   Future<List<Category>> _loadCategories() async {
     try {
-      final String jsonString = await rootBundle.loadString('lib/services/category_model.json');
+      final String jsonString = await rootBundle.loadString(
+        'lib/services/category_model.json',
+      );
       final categoryModel = categoryModelFromJson(jsonString);
       return categoryModel.categories;
     } catch (e) {
       developer.log("Error loading categories: $e", name: "CategoryScreen");
-      return []; // Return an empty list on error
+      return [];
     }
   }
 
@@ -39,8 +40,12 @@ class CategoryScreen extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("Could not load categories from JSON."));
+          if (snapshot.hasError ||
+              !snapshot.hasData ||
+              snapshot.data!.isEmpty) {
+            return const Center(
+              child: Text("Could not load categories from JSON."),
+            );
           }
 
           final categories = snapshot.data!;
@@ -79,16 +84,17 @@ class CategoryScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Image.asset(
-                          // This assumes you have an image in assets named after the category
-                          // e.g., assets/images/cappuccino.png
                           'assets/images/${category.name.toLowerCase().replaceAll(' ', '_')}.png',
                           height: 120,
                           width: 200,
                           fit: BoxFit.contain,
-                           errorBuilder: (context, error, stackTrace) {
-                                // Fallback icon if image is not found
-                                return const Icon(Icons.category, size: 80, color: Colors.grey);
-                           }
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.category,
+                              size: 80,
+                              color: Colors.grey,
+                            );
+                          },
                         ),
                         const SizedBox(height: 10),
                         Text(

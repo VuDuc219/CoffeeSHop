@@ -22,7 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ADDED: Initialize the controller
     final controller = Get.put(HomeController());
     final primaryColor = Theme.of(context).primaryColor;
 
@@ -35,10 +34,9 @@ class _HomeScreenState extends State<HomeScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // ADDED: Hello user text, shown only when the name is loaded.
               Obx(() {
                 return controller.username.value.isEmpty
-                    ? const SizedBox.shrink() // Show nothing if name is not ready
+                    ? const SizedBox.shrink()
                     : Align(
                         alignment: Alignment.centerLeft,
                         child: Padding(
@@ -55,7 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
               }),
 
-              // Search and Notification Container
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -197,8 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             product['price']! as String,
                             style: const TextStyle(
                               fontSize: 14,
-                              color: Colors
-                                  .white70, // Changed color for visibility
+                              color: Colors.white70,
                               fontWeight: FontWeight.bold,
                             ),
                           ),

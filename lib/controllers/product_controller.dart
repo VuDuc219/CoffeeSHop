@@ -4,13 +4,12 @@ import 'package:myapp/consts/firebase_consts.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 class ProductController extends GetxController {
-  var quantity = 1.obs; // Default quantity to 1
+  var quantity = 1.obs;
   var sizeIndex = 0.obs;
   var totalPrice = 0.obs;
   var priceList = <int>[].obs;
   var userRating = 0.0.obs;
 
-  // Add to cart method
   addToCart({
     required String title,
     required String img,

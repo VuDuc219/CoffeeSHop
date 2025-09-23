@@ -211,6 +211,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(fontFamily: semibold, color: darkFontGrey),
               ),
               onTap: () async {
+                Get.delete<ProfileController>();
                 await authController.signOutMethod();
                 Get.offAll(() => const LoginScreen());
               },
