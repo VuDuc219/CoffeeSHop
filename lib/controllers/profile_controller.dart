@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:developer' as developer;
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:myapp/consts/firebase_consts.dart';
@@ -67,31 +68,50 @@ class ProfileController extends GetxController {
     }
   }
 
+  // --- The Absolute Final Attempt ---
   Future<void> uploadProfilePicture() async {
     if (pickedImagePath.value.isEmpty) return;
 
     isLoading.value = true;
-    Get.snackbar("Uploading", "Your new profile picture is being uploaded...");
+    Get.snackbar("Uploading", "Attempting to upload picture...");
 
     final user = auth.currentUser;
-    if (user == null) return;
-
-    final fileName = basename(pickedImagePath.value);
-    final destination = 'images/${user.uid}/$fileName';
+    if (user == null) {
+      isLoading.value = false;
+      return;
+    }
 
     try {
-      final ref = storage.ref(destination);
+      final String uniqueFileName =
+          '${user.uid}-${DateTime.now().millisecondsSinceEpoch}${extension(pickedImagePath.value)}';
+      final ref = storage
+          .ref()
+          .child('images')
+          .child(user.uid)
+          .child(uniqueFileName);
+
       await ref.putFile(File(pickedImagePath.value));
-      final url = await ref.getDownloadURL();
+
+      final newUrl = await ref.getDownloadURL();
 
       await firestore.collection(usersCollection).doc(user.uid).update({
-        'imageUrl': url,
+        'imageUrl': newUrl,
       });
 
-      profileImageUrl.value = url;
-      Get.snackbar("Success", "Profile picture updated!");
-    } catch (e) {
-      Get.snackbar("Error", "Failed to upload image: $e");
+      profileImageUrl.value = newUrl;
+      Get.snackbar("Success!", "Profile picture updated.");
+    } catch (e, s) {
+      developer.log(
+        'CRITICAL UPLOAD FAILED',
+        name: 'ProfileController',
+        error: e,
+        stackTrace: s,
+      );
+      Get.snackbar(
+        "Upload Error",
+        "Could not upload file: ${e.toString()}",
+        duration: const Duration(seconds: 10), // Give time to read the error
+      );
     } finally {
       isLoading.value = false;
     }

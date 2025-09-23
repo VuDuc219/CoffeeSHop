@@ -28,6 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     authController = Get.find<AuthController>();
     profileController = Get.find<ProfileController>();
     cartController = Get.find<CartController>();
+    profileController.loadUserData();
   }
 
   @override
@@ -36,7 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
         child: Obx(() {
-          if (profileController.isLoading.value) {
+          if (profileController.isLoading.value && profileController.userName.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation(Colors.brown),
@@ -50,11 +51,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 20),
               _buildDetailsCards(context, profileController, cartController),
               const SizedBox(height: 30),
-              _buildMenuOptions(
-                context,
-                authController,
-                profileController.userName.value,
-              ),
+              _buildMenuOptions(context, authController),
             ],
           );
         }),
@@ -62,49 +59,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileHeader(
-    BuildContext context,
-    ProfileController controller,
-  ) {
+  Widget _buildProfileHeader(BuildContext context, ProfileController controller) {
     return Container(
       padding: const EdgeInsets.all(20),
       color: Colors.brown,
       child: Row(
         children: [
-          Obx(
-            () => CircleAvatar(
+          Obx(() {
+            final imageUrl = controller.profileImageUrl.value;
+            return CircleAvatar(
               radius: 40,
-              backgroundImage: controller.profileImageUrl.value.isNotEmpty
-                  ? NetworkImage(controller.profileImageUrl.value)
-                  : const AssetImage('assets/images/profile_placeholder.png')
-                        as ImageProvider,
-            ),
-          ),
+              backgroundColor: Colors.white24,
+              backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
+              child: imageUrl.isEmpty
+                  ? const Icon(Icons.person, size: 50, color: Colors.white)
+                  : null,
+            );
+          }),
           const SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Obx(
-                  () => Text(
-                    controller.userName.value,
-                    style: const TextStyle(
-                      fontFamily: bold,
-                      fontSize: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+                Obx(() => Text(
+                      controller.userName.value,
+                      style: const TextStyle(
+                          fontFamily: bold, fontSize: 18, color: Colors.white),
+                    )),
                 const SizedBox(height: 5),
-                Obx(
-                  () => Text(
-                    controller.userEmail.value,
-                    style: const TextStyle(
-                      fontFamily: regular,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ),
+                Obx(() => Text(
+                      controller.userEmail.value,
+                      style: const TextStyle(
+                          fontFamily: regular, color: Colors.white70),
+                    )),
               ],
             ),
           ),
@@ -148,11 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildMenuOptions(
-    BuildContext context,
-    AuthController authController,
-    String currentUserName,
-  ) {
+  Widget _buildMenuOptions(BuildContext context, AuthController authController) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -163,11 +146,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             topRight: Radius.circular(20),
           ),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 10,
-              offset: Offset(0, -5),
-            ),
+            BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -5)),
           ],
         ),
         child: ListView(
@@ -175,47 +154,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 20),
             ListTile(
               leading: const Icon(Icons.list_alt_outlined, color: darkFontGrey),
-              title: const Text(
-                "My Orders",
-                style: TextStyle(fontFamily: semibold, color: darkFontGrey),
-              ),
-              onTap: () {
-                Get.to(() => const OrdersScreen());
-              },
+              title: const Text("My Orders",
+                  style: TextStyle(fontFamily: semibold, color: darkFontGrey)),
+              onTap: () => Get.to(() => const OrdersScreen()),
             ),
             const Divider(),
             const ListTile(
               leading: Icon(Icons.favorite_outline, color: darkFontGrey),
-              title: Text(
-                "My Wishlist",
-                style: TextStyle(fontFamily: semibold, color: darkFontGrey),
-              ),
+              title: Text("My Wishlist",
+                  style: TextStyle(fontFamily: semibold, color: darkFontGrey)),
             ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.message_outlined, color: darkFontGrey),
-              title: const Text(
-                "Messages",
-                style: TextStyle(fontFamily: semibold, color: darkFontGrey),
-              ),
-              onTap: () {
-                Get.to(
-                  () => ChatScreen(
+              title: const Text("Messages",
+                  style: TextStyle(fontFamily: semibold, color: darkFontGrey)),
+              onTap: () => Get.to(() => ChatScreen(
                     friendName: "admin",
                     friendId: "QsoApR4yrPSCqZLOxcagt26k38n2",
-                  ),
-                );
-              },
+                  )),
             ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.logout, color: darkFontGrey),
-              title: const Text(
-                "Log out",
-                style: TextStyle(fontFamily: semibold, color: darkFontGrey),
-              ),
+              title: const Text("Log out",
+                  style: TextStyle(fontFamily: semibold, color: darkFontGrey)),
               onTap: () async {
                 Get.delete<ProfileController>();
+                Get.delete<CartController>();
                 await authController.signOutMethod();
                 Get.offAll(() => const LoginScreen());
               },
@@ -226,44 +192,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showEditProfileDialog(
-    BuildContext context,
-    ProfileController controller,
-  ) {
-    final nameController = TextEditingController(
-      text: controller.userName.value,
-    );
+  void _showEditProfileDialog(BuildContext context, ProfileController controller) {
+    final nameController = TextEditingController(text: controller.userName.value);
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Edit Profile'),
-          content: Column(
+          content: Obx(() => Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               GestureDetector(
                 onTap: () {
-                  controller.pickImage();
+                  if (!controller.isLoading.value) {
+                    controller.pickImage();
+                  }
                 },
-                child: Obx(
-                  () => CircleAvatar(
-                    radius: 40,
-                    backgroundImage: controller.profileImageUrl.value.isNotEmpty
-                        ? NetworkImage(controller.profileImageUrl.value)
-                        : const AssetImage(
-                                'assets/images/profile_placeholder.png',
-                              )
-                              as ImageProvider,
-                    child: const Align(
-                      alignment: Alignment.bottomRight,
-                      child: Icon(
-                        Icons.camera_alt,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.grey.shade300,
+                      backgroundImage: controller.profileImageUrl.value.isNotEmpty
+                          ? NetworkImage(controller.profileImageUrl.value)
+                          : null,
+                      child: controller.profileImageUrl.value.isEmpty
+                          ? const Icon(Icons.person, size: 50, color: Colors.white)
+                          : null,
                     ),
-                  ),
+                    if (controller.isLoading.value)
+                      const CircularProgressIndicator(),
+                    if (!controller.isLoading.value)
+                      const Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: CircleAvatar(
+                          radius: 13,
+                          backgroundColor: Colors.black54,
+                          child: Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                        ),
+                      )
+                  ],
                 ),
               ),
               const SizedBox(height: 20),
@@ -272,7 +243,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 decoration: const InputDecoration(labelText: 'User Name'),
               ),
             ],
-          ),
+          )),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
