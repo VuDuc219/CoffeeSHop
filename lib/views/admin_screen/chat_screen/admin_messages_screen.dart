@@ -24,7 +24,6 @@ class AdminMessagesScreen extends StatelessWidget {
         ), // Make back button white
       ),
       body: StreamBuilder<QuerySnapshot>(
-        // FIXED: Query the 'chats' collection for conversations involving the admin.
         stream: firestore
             .collection(chatsCollection)
             .where('users', arrayContains: currentAdminId)
@@ -66,7 +65,6 @@ class AdminMessagesScreen extends StatelessWidget {
               );
 
               if (friendId.isEmpty) {
-                // Skip rendering if for some reason the friendId can't be determined
                 return const SizedBox.shrink();
               }
 
@@ -80,10 +78,8 @@ class AdminMessagesScreen extends StatelessWidget {
                     .get(),
                 builder: (context, userSnapshot) {
                   Widget leadingWidget;
-                  String finalFriendName =
-                      friendName; // Default name from chat doc
+                  String finalFriendName = friendName;
 
-                  // If we successfully fetch the user document, get the real name and avatar
                   if (userSnapshot.connectionState == ConnectionState.done &&
                       userSnapshot.hasData &&
                       userSnapshot.data!.exists) {
@@ -107,7 +103,6 @@ class AdminMessagesScreen extends StatelessWidget {
                           : null,
                     );
                   } else {
-                    // Fallback avatar while loading or if user is not found
                     leadingWidget = CircleAvatar(
                       radius: 28,
                       backgroundColor: Colors.grey[200],
@@ -138,8 +133,7 @@ class AdminMessagesScreen extends StatelessWidget {
                     onTap: () {
                       Get.to(
                         () => ChatScreen(
-                          friendName:
-                              finalFriendName, // Pass the correct, fetched name
+                          friendName: finalFriendName,
                           friendId: friendId,
                         ),
                       );

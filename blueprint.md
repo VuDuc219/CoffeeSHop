@@ -2,35 +2,32 @@
 
 ## Overview
 
-This is a Flutter application for a coffee shop. It allows users to browse different coffee categories, view product details, manage their profile, and authenticate.
+This document outlines the architecture, features, and ongoing development plan for the Coffee Shop mobile application.
 
-## Implemented Features
+## Core Features & Design
 
-*   **Authentication:**
-    *   User signup and login with email and password using Firebase Authentication.
-    *   User data (name, email, profile image URL) is stored in Cloud Firestore upon registration.
-*   **User Profile:**
-    *   Displays the user's name, email, and profile picture fetched from Firestore.
-    *   Allows users to edit their name and profile picture.
-    *   Profile pictures are uploaded to Firebase Storage, and the URL is updated in the user's Firestore document.
-    *   A loading indicator is displayed while user data is being fetched.
-*   **Home Screen:** Displays a banner, a search bar, and sections for "Today's Special" and "Best Sellers".
-*   **Category Screen:** Shows a list of coffee categories.
-*   **Product Detail Screen:** Shows details for a selected product.
-*   **Theming:**
-    *   Uses a `ValueNotifier` in `main.dart` to manage and switch between light and dark themes.
-*   **Asset Management:**
-    *   Images for banners, products, and icons are stored in `assets/images/` and `assets/icons/`.
-    *   `pubspec.yaml` is configured to include these assets.
-*   **Dependencies:**
-    *   `velocity_x`: For UI development.
-    *   `get`: For state management and navigation.
-    *   `firebase_core`: For Firebase integration.
-    *   `firebase_auth`: For authentication.
-    *   `cloud_firestore`: For database.
-    *   `firebase_storage`: For file storage.
-    *   `image_picker`: For selecting images from the gallery.
+*   **State Management:** GetX for reactive state management.
+*   **Authentication:** Firebase Auth for user login and registration.
+*   **Database:** Firestore for storing user data, products, orders, and chats.
+*   **UI:** Modern, coffee-themed design with a brown and golden color palette.
+*   **Navigation:** Centralized bottom navigation bar (`Home`, `Category`, `Cart`, `Account`).
+*   **Cart Management:** Reactive cart controller that updates the UI in real-time.
+*   **Profile Management:** Users can view and edit their profile information, including their name and profile picture.
 
-## Current Plan
+## Current Task: Enhance Chat Timestamp Formatting
 
-The requested features for the profile screen have been implemented. The system is now ready for further development or new feature requests.
+**Objective:** Improve the readability of chat messages by providing more context to the timestamps, rather than just showing the time.
+
+**Plan:**
+
+1.  **Add `intl` Package:** Add the `intl` package to `pubspec.yaml` for advanced date and time formatting.
+2.  **Create a Time Formatting Helper:**
+    *   Create a new file, likely under `lib/common/widgets/` or a similar utility path.
+    *   Implement a function `formatChatMessageTime(Timestamp timestamp)` that contains the following logic:
+        *   If the message was sent today, format as `HH:mm` (e.g., `17:45`).
+        *   If the message was sent within the last 7 days (but not today), format as `EEE, HH:mm` (e.g., `Mon, 17:45`).
+        *   If the message is older, format as `d MMM y, HH:mm` (e.g., `5 Aug 2025, 17:45`).
+3.  **Update UI Components:**
+    *   Locate the widget responsible for rendering individual chat messages (likely in `chat_screen.dart` and/or `admin_messages_screen.dart`).
+    *   Import the new helper function.
+    *   Use the function to format the `created_on` timestamp for each message before it's displayed.
