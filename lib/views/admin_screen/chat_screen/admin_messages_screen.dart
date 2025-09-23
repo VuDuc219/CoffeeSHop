@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:myapp/consts/firebase_consts.dart';
+import 'package:myapp/controllers/profile_controller.dart';
 import 'package:myapp/views/chat_screen/chat_screen.dart';
 
 class AdminMessagesScreen extends StatelessWidget {
@@ -155,6 +156,9 @@ class AdminMessagesScreen extends StatelessWidget {
                     ),
                     onTap: () {
                       if (userSnapshot.hasData && userSnapshot.data!.exists) {
+                        // Initialize ProfileController before navigating
+                        Get.put(ProfileController());
+
                         Get.to(
                           () => ChatScreen(
                             friendName: finalFriendName,
