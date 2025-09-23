@@ -57,4 +57,19 @@ class FirestoreServices {
         .where('users', arrayContains: auth.currentUser!.uid)
         .snapshots();
   }
+
+  // Methods to get all orders and wishlists for the current user
+  static getAllOrders() {
+    return firestore
+        .collection(ordersCollection)
+        .where('order_by', isEqualTo: auth.currentUser!.uid)
+        .snapshots();
+  }
+
+  static getWishlists() {
+    return firestore
+        .collection(productsCollection)
+        .where('p_wishlist', arrayContains: auth.currentUser!.uid)
+        .snapshots();
+  }
 }
