@@ -8,6 +8,7 @@ import 'package:myapp/views/auth_screen/login_screen.dart';
 import 'package:myapp/views/chat_screen/chat_screen.dart';
 import 'package:myapp/views/orders_screen/orders_screen.dart';
 import 'package:myapp/views/profile_screen/components/details_card.dart';
+import 'package:myapp/views/wishlist_screen/wishlist_screen.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -159,10 +160,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () => Get.to(() => const OrdersScreen()),
             ),
             const Divider(),
-            const ListTile(
-              leading: Icon(Icons.favorite_outline, color: darkFontGrey),
-              title: Text("My Wishlist",
+            ListTile(
+              leading: const Icon(Icons.favorite_outline, color: darkFontGrey),
+              title: const Text("My Wishlist",
                   style: TextStyle(fontFamily: semibold, color: darkFontGrey)),
+              onTap: () => Get.to(() => const WishlistScreen()),
             ),
             const Divider(),
             ListTile(
