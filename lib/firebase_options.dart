@@ -55,14 +55,15 @@ class DefaultFirebaseOptions {
     messagingSenderId: '931842908252',
     projectId: 'coffeshop-a45d8',
     authDomain: 'coffeshop-a45d8.firebaseapp.com',
-    storageBucket: 'coffeshop-a45d8.appspot.com',
+    storageBucket: 'coffeshop-a45d8.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyA4oLjCb2MNE6oGsIonE_j2vae0j-JfX94',
-    appId: '1:931842908252:android:ec3a258598cd81dbc192fd',
+    apiKey: 'AIzaSyAQeVao2lrCqG_yiBP1sgNd042cDj1PmRU',
+    appId: '1:931842908252:android:0d2f47b4352d72cc078699',
     messagingSenderId: '931842908252',
     projectId: 'coffeshop-a45d8',
-    storageBucket: 'coffeshop-a45d8.appspot.com',
+    storageBucket: 'coffeshop-a45d8.firebasestorage.app',
   );
+
 }

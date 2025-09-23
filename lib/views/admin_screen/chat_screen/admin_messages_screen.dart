@@ -62,10 +62,17 @@ class AdminMessagesScreen extends StatelessWidget {
               );
 
               if (friendId.isEmpty) {
-                return const SizedBox.shrink();
+                // This case handles a chat document with invalid user data.
+                return const ListTile(
+                  leading: CircleAvatar(
+                    radius: 28,
+                    child: Icon(Icons.error_outline),
+                  ),
+                  title: Text("Invalid Conversation"),
+                  subtitle: Text("Could not determine the other user."),
+                );
               }
 
-              String friendName = data['friend_name'] ?? 'Chat User';
               String lastMsg = data['last_msg'] ?? 'No messages yet';
 
               return FutureBuilder<DocumentSnapshot>(
@@ -75,14 +82,29 @@ class AdminMessagesScreen extends StatelessWidget {
                     .get(),
                 builder: (context, userSnapshot) {
                   Widget leadingWidget;
-                  String finalFriendName = friendName;
+                  String finalFriendName;
 
-                  if (userSnapshot.connectionState == ConnectionState.done &&
-                      userSnapshot.hasData &&
+                  if (userSnapshot.hasError) {
+                    leadingWidget = const CircleAvatar(
+                      radius: 28,
+                      backgroundColor: Colors.redAccent,
+                      child: Icon(Icons.error, color: Colors.white),
+                    );
+                    finalFriendName = "Error Loading User";
+                  } else if (userSnapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    leadingWidget = CircleAvatar(
+                      radius: 28,
+                      backgroundColor: Colors.grey.shade200,
+                      child: const CircularProgressIndicator(strokeWidth: 2),
+                    );
+                    finalFriendName = "Loading...";
+                  } else if (userSnapshot.hasData &&
                       userSnapshot.data!.exists) {
                     var userData =
                         userSnapshot.data!.data() as Map<String, dynamic>?;
-                    finalFriendName = userData?['name'] ?? 'Unknown User';
+                    finalFriendName =
+                        userData?['name'] ?? 'Name Not Available';
                     String friendImageUrl = userData?['imageUrl'] ?? '';
 
                     leadingWidget = CircleAvatar(
@@ -100,15 +122,17 @@ class AdminMessagesScreen extends StatelessWidget {
                           : null,
                     );
                   } else {
+                    // Document does not exist
                     leadingWidget = CircleAvatar(
                       radius: 28,
-                      backgroundColor: Colors.grey[200],
+                      backgroundColor: Colors.grey.shade300,
                       child: const Icon(
-                        Icons.person,
-                        color: Colors.grey,
+                        Icons.person_off_outlined,
+                        color: Colors.black54,
                         size: 30,
                       ),
                     );
+                    finalFriendName = "User Not Found";
                   }
 
                   return ListTile(
@@ -122,18 +146,22 @@ class AdminMessagesScreen extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      lastMsg,
+                      userSnapshot.hasError
+                          ? 'Failed to load details'
+                          : lastMsg,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                     onTap: () {
-                      Get.to(
-                        () => ChatScreen(
-                          friendName: finalFriendName,
-                          friendId: friendId,
-                        ),
-                      );
+                      if (userSnapshot.hasData && userSnapshot.data!.exists) {
+                        Get.to(
+                          () => ChatScreen(
+                            friendName: finalFriendName,
+                            friendId: friendId,
+                          ),
+                        );
+                      }
                     },
                   );
                 },
