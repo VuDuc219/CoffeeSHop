@@ -6,6 +6,7 @@ import 'package:myapp/controllers/cart_controller.dart';
 import 'package:myapp/controllers/profile_controller.dart';
 import 'package:myapp/views/auth_screen/login_screen.dart';
 import 'package:myapp/views/chat_screen/chat_screen.dart';
+import 'package:myapp/views/orders_screen/orders_screen.dart';
 import 'package:myapp/views/profile_screen/components/details_card.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -172,12 +173,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: ListView(
           children: [
             const SizedBox(height: 20),
-            const ListTile(
-              leading: Icon(Icons.list_alt_outlined, color: darkFontGrey),
-              title: Text(
+            ListTile(
+              leading: const Icon(Icons.list_alt_outlined, color: darkFontGrey),
+              title: const Text(
                 "My Orders",
                 style: TextStyle(fontFamily: semibold, color: darkFontGrey),
               ),
+              onTap: () {
+                Get.to(() => const OrdersScreen());
+              },
             ),
             const Divider(),
             const ListTile(
