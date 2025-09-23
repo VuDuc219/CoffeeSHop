@@ -3,26 +3,43 @@ import 'package:get/get.dart';
 import 'package:myapp/consts/consts.dart';
 import 'package:myapp/controllers/product_controller.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:myapp/consts/firebase_consts.dart';
 
-class ItemDetails extends StatelessWidget {
+class ItemDetails extends StatefulWidget {
   final Map<String, dynamic> data;
 
   const ItemDetails({Key? key, required this.data}) : super(key: key);
 
   @override
+  State<ItemDetails> createState() => _ItemDetailsState();
+}
+
+class _ItemDetailsState extends State<ItemDetails> {
+  late final ProductController controller;
+  bool isWishlist = false;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(ProductController());
+    controller.initData(widget.data['p_price'] as List<dynamic>? ?? []);
+
+    // Check if the item is already in the wishlist
+    List<dynamic> wishlist = widget.data['p_wishlist'] ?? [];
+    isWishlist = wishlist.contains(auth.currentUser!.uid);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final ProductController controller = Get.put(ProductController());
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.initData(data['p_price'] as List<dynamic>? ?? []);
-    });
-
-    final String productName = data['p_name'] as String? ?? 'No Name';
-    final List<dynamic> imageUrls = data['p_imgs'] as List<dynamic>? ?? [];
-    final List<dynamic> sizes = data['p_size'] as List<dynamic>? ?? [];
+    final String productName = widget.data['p_name'] as String? ?? 'No Name';
+    final List<dynamic> imageUrls =
+        widget.data['p_imgs'] as List<dynamic>? ?? [];
+    final List<dynamic> sizes = widget.data['p_size'] as List<dynamic>? ?? [];
     final String description =
-        data['p_desc'] as String? ?? 'No description available.';
-    final int availableStock = int.tryParse(data['p_quantity'].toString()) ?? 0;
+        widget.data['p_desc'] as String? ?? 'No description available.';
+    final int availableStock =
+        int.tryParse(widget.data['p_quantity'].toString()) ?? 0;
+    final String docId = widget.data['id'] as String;
 
     String detailImageUrl = (imageUrls.length > 1)
         ? imageUrls[1]
@@ -41,8 +58,20 @@ class ItemDetails extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.favorite_border, color: Colors.black),
-            onPressed: () {},
+            icon: Icon(
+              isWishlist ? Icons.favorite : Icons.favorite_border,
+              color: isWishlist ? Colors.red : Colors.black,
+            ),
+            onPressed: () {
+              setState(() {
+                isWishlist = !isWishlist;
+              });
+              if (isWishlist) {
+                controller.addToWishlist(docId, context);
+              } else {
+                controller.removeFromWishlist(docId, context);
+              }
+            },
           ),
         ],
         backgroundColor: Colors.transparent,

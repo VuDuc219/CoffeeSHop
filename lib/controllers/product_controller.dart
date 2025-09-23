@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:myapp/consts/firebase_consts.dart';
 import 'package:velocity_x/velocity_x.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProductController extends GetxController {
   var quantity = 1.obs;
@@ -72,5 +73,19 @@ class ProductController extends GetxController {
 
   void updateUserRating(double rating) {
     userRating.value = rating;
+  }
+
+  addToWishlist(docId, context) async {
+    await firestore.collection(productsCollection).doc(docId).set({
+      'p_wishlist': FieldValue.arrayUnion([auth.currentUser!.uid])
+    }, SetOptions(merge: true));
+    VxToast.show(context, msg: "Added to wishlist");
+  }
+
+  removeFromWishlist(docId, context) async {
+    await firestore.collection(productsCollection).doc(docId).set({
+      'p_wishlist': FieldValue.arrayRemove([auth.currentUser!.uid])
+    }, SetOptions(merge: true));
+    VxToast.show(context, msg: "Removed from wishlist");
   }
 }

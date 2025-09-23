@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:myapp/consts/consts.dart';
 import 'package:myapp/controllers/cart_controller.dart';
+import 'package:myapp/views/cart_screen/shipping_screen.dart'; // Import the new screen
 
 class CartScreen extends StatelessWidget {
   const CartScreen({Key? key}) : super(key: key);
@@ -186,7 +187,9 @@ class CartScreen extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Get.to(() => const ShippingDetails()); // Navigate to shipping screen
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: golden,
                           padding: const EdgeInsets.symmetric(vertical: 15),
