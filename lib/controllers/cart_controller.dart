@@ -8,6 +8,7 @@ import 'package:myapp/controllers/home_controller.dart';
 class CartController extends GetxController {
   final RxList<DocumentSnapshot> products = <DocumentSnapshot>[].obs;
   var totalP = 0.obs;
+  var totalItems = 0.obs; // Add this line
 
   // Controllers for shipping details - Simplified
   final addressController = TextEditingController();
@@ -35,7 +36,7 @@ class CartController extends GetxController {
         .listen(
           (snapshot) {
             products.assignAll(snapshot.docs);
-            calculateTotalPrice();
+            calculateTotals(); // Change this line
             productSnapshot = snapshot.docs;
           },
           onError: (error) {
@@ -44,15 +45,23 @@ class CartController extends GetxController {
         );
   }
 
-  void calculateTotalPrice() {
+  void calculateTotals() {
     totalP.value = 0;
+    totalItems.value = 0;
     for (var doc in products) {
       final data = doc.data() as Map<String, dynamic>?;
-      if (data != null && data.containsKey('tprice')) {
-        totalP.value += (data['tprice'] as num).toInt();
+      if (data != null) {
+        if (data.containsKey('tprice')) {
+          totalP.value += (data['tprice'] as num).toInt();
+        }
+        // Use 'qty' to sum up total items
+        if (data.containsKey('qty')) {
+          totalItems.value += (data['qty'] as num).toInt();
+        }
       }
     }
   }
+
 
   void changePaymentIndex(int index) {
     paymentIndex.value = index;
