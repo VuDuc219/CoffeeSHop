@@ -6,6 +6,7 @@ import 'package:myapp/consts/consts.dart';
 import 'package:myapp/controllers/home_controller.dart';
 import 'package:myapp/services/firestore_services.dart';
 import 'package:myapp/views/category_screen/item_details.dart';
+import 'package:myapp/views/home_screen/search_screen.dart';
 import 'package:myapp/views/widgets_common/home_button.dart';
 import 'package:myapp/views/widgets_common/loading_indicator.dart';
 
@@ -17,6 +18,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final TextEditingController _searchController = TextEditingController();
+
   OutlineInputBorder _buildBorder(Color color) {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
@@ -68,12 +71,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     // Search box
                     Expanded(
                       child: TextField(
+                        controller: _searchController,
                         decoration: InputDecoration(
                           hintText: 'Search anything...',
                           hintStyle: TextStyle(color: Colors.grey[400]),
-                          suffixIcon: const Icon(
-                            Icons.search,
-                            color: Colors.grey,
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.search, color: Colors.grey),
+                            onPressed: () {
+                              if (_searchController.text.isNotEmpty) {
+                                Get.to(() => SearchScreen(title: _searchController.text));
+                              }
+                            },
                           ),
                           filled: true,
                           fillColor: Colors.grey[100],
@@ -85,6 +93,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           enabledBorder: _buildBorder(Colors.grey.shade300),
                           focusedBorder: _buildBorder(primaryColor),
                         ),
+                        onSubmitted: (value) {
+                          if (value.isNotEmpty) {
+                            Get.to(() => SearchScreen(title: value));
+                          }
+                        },
                       ),
                     ),
                     const SizedBox(width: 10),
