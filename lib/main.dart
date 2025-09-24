@@ -1,8 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:myapp/controllers/auth_controller.dart';
-import 'package:myapp/controllers/messages_controller.dart';
 import 'package:myapp/views/splash_screen/splash_screen.dart';
 import 'firebase_options.dart';
 
@@ -13,8 +11,6 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
   }
-  Get.put(AuthController());
-  Get.put(MessagesController());
   runApp(const MyApp());
 }
 

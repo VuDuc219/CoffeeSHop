@@ -74,6 +74,7 @@ class AuthController extends GetxController {
     });
   }
 
+  // FIXED: Removed unused context parameter
   Future<void> signOutMethod() async {
     try {
       await auth.signOut();

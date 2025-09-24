@@ -18,7 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final AuthController _authController = Get.find<AuthController>();
+  final AuthController _authController = Get.put(AuthController());
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +116,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     Get.put(ProfileController());
                     VxToast.show(context, msg: "Logged in successfully");
 
-                    // It is recommended to use a more robust method for identifying admin users, such as custom claims or a roles-based system in Firestore.
                     if (_emailController.text == "admin@gmail.com") {
                       Get.offAll(() => const AdminHome());
                     } else {
