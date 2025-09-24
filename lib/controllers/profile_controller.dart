@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:developer' as developer;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:myapp/consts/firebase_consts.dart';
@@ -9,18 +11,48 @@ import 'package:path/path.dart';
 class ProfileController extends GetxController {
   var isLoading = false.obs;
 
+  // --- Local State Management for UI --- 
+  final RxInt unreadMessageCount = 0.obs;
+  StreamSubscription<QuerySnapshot>? _unreadMessagesSubscription;
+
+  // --- User Profile Data ---
   final Rx<String> userName = ''.obs;
   final Rx<String> userEmail = ''.obs;
   final Rx<String> profileImageUrl = ''.obs;
   final Rx<int> wishlistCount = 0.obs;
   final Rx<int> orderCount = 0.obs;
-
   var pickedImagePath = ''.obs;
 
   @override
   void onInit() {
     super.onInit();
-    loadUserData();
+    if (auth.currentUser != null) {
+      _initializeStreams(auth.currentUser!.uid);
+      loadUserData();
+    }
+  }
+
+  @override
+  void onClose() {
+    _unreadMessagesSubscription?.cancel();
+    super.onClose();
+  }
+
+  void _initializeStreams(String userId) {
+    _unreadMessagesSubscription?.cancel(); // Cancel any existing subscription
+    final stream = firestore
+        .collectionGroup(messagesCollection)
+        .where('toId', isEqualTo: userId)
+        .where('read', isEqualTo: '')
+        .snapshots();
+
+    // Listen to the stream and update the local count
+    _unreadMessagesSubscription = stream.listen((snapshot) {
+      unreadMessageCount.value = snapshot.docs.length;
+    }, onError: (error) {
+      developer.log("Error listening to unread messages", error: error);
+      unreadMessageCount.value = 0;
+    });
   }
 
   Future<void> loadUserData() async {
@@ -39,9 +71,7 @@ class ProfileController extends GetxController {
           profileImageUrl.value = data['imageUrl'] ?? '';
         }
 
-        wishlistCount.value = await FirestoreServices.getWishlistCount(
-          user.uid,
-        );
+        wishlistCount.value = await FirestoreServices.getWishlistCount(user.uid);
         orderCount.value = await FirestoreServices.getOrderCount(user.uid);
       } catch (e) {
         Get.snackbar("Error", "Failed to load user data: $e");
@@ -53,6 +83,32 @@ class ProfileController extends GetxController {
     }
   }
 
+  Future<void> markMessagesAsRead() async {
+    final user = auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final unreadMessages = await firestore
+          .collectionGroup(messagesCollection)
+          .where('toId', isEqualTo: user.uid)
+          .where('read', isEqualTo: '')
+          .get();
+
+      final batch = firestore.batch();
+      for (var doc in unreadMessages.docs) {
+        batch.update(doc.reference, {'read': FieldValue.serverTimestamp()});
+      }
+      await batch.commit();
+    } catch (e) {
+      developer.log(
+        "Error marking messages as read",
+        name: "ProfileController",
+        error: e,
+      );
+    }
+  }
+
+  // All other methods remain the same
   Future<void> pickImage() async {
     try {
       final pickedFile = await ImagePicker().pickImage(
@@ -68,7 +124,6 @@ class ProfileController extends GetxController {
     }
   }
 
-  // --- The Absolute Final Attempt ---
   Future<void> uploadProfilePicture() async {
     if (pickedImagePath.value.isEmpty) return;
 

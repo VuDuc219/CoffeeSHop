@@ -61,6 +61,8 @@ class ChatsController extends GetxController {
           'created_on': FieldValue.serverTimestamp(),
           'msg': msg,
           'uid': currentId,
+          'toId': friendId,
+          'read': '',
         });
 
         await chatDocument.update({

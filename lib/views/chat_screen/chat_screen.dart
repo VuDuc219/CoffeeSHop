@@ -5,7 +5,7 @@ import 'package:myapp/consts/consts.dart';
 import 'package:myapp/controllers/chats_controller.dart';
 import 'package:myapp/views/chat_screen/components/receiver_bubble.dart';
 import 'package:myapp/views/chat_screen/components/sender_bubble.dart';
-import 'package:myapp/views/widgets_common/time_formatter.dart'; // Updated import path
+import 'package:myapp/views/widgets_common/time_formatter.dart';
 
 class ChatScreen extends StatefulWidget {
   final String friendName;
