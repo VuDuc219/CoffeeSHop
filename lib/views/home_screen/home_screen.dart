@@ -1,9 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:myapp/consts/consts.dart';
 import 'package:myapp/controllers/home_controller.dart';
+import 'package:myapp/services/firestore_services.dart';
+import 'package:myapp/views/category_screen/item_details.dart';
 import 'package:myapp/views/widgets_common/home_button.dart';
+import 'package:myapp/views/widgets_common/loading_indicator.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -153,57 +157,70 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               10.heightBox,
-              SizedBox(
-                height: 220, // Height of the product list
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: featuredProducts.length,
-                  itemBuilder: (context, index) {
-                    final product = featuredProducts[index];
-                    return Container(
-                      margin: const EdgeInsets.only(right: 12),
-                      width: 160,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Product Image
-                          Container(
-                            height: 140,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              image: DecorationImage(
-                                image: AssetImage(product['image']! as String),
-                                fit: BoxFit.cover,
-                              ),
+              FutureBuilder(
+                future: FirestoreServices.getFeaturedProducts(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(child: loadingIndicator());
+                  } else if (snapshot.data!.docs.isEmpty) {
+                    return "No featured products".text.white.makeCentered();
+                  } else {
+                    var featuredData = snapshot.data!.docs;
+                    return SizedBox(
+                      height: 220, // Height of the product list
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: featuredData.length,
+                        itemBuilder: (context, index) {
+                          var doc = featuredData[index];
+                          var product = doc.data() as Map<String, dynamic>;
+                          product['id'] = doc.id; // Add this line
+                          return Container(
+                            margin: const EdgeInsets.only(right: 12),
+                            width: 160,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Product Image
+                                Image.network(
+                                  product['p_imgs'][0],
+                                  width: 150,
+                                  height: 150,
+                                  fit: BoxFit.cover,
+                                ),
+                                10.heightBox,
+                                // Product Name
+                                Text(
+                                  product['p_name'],
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors
+                                        .white, // Changed color for visibility
+                                  ),
+                                ),
+                                5.heightBox,
+                                // Product Price
+                                Text(
+                                  "${product['p_price'][0]}",
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          10.heightBox,
-                          // Product Name
-                          Text(
-                            product['name']! as String,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color:
-                                  Colors.white, // Changed color for visibility
-                            ),
-                          ),
-                          5.heightBox,
-                          // Product Price
-                          Text(
-                            product['price']! as String,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.white70,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                          ).onTap(() {
+                            Get.to(() => ItemDetails(data: product));
+                          });
+                        },
                       ),
                     );
-                  },
-                ),
-              ),
+                  }
+                },
+              )
             ],
           ),
         ),

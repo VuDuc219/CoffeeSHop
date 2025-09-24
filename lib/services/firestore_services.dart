@@ -72,4 +72,11 @@ class FirestoreServices {
         .where('p_wishlist', arrayContains: auth.currentUser!.uid)
         .snapshots();
   }
+
+  static getFeaturedProducts() {
+    return firestore
+        .collection(productsCollection)
+        .where('is_featured', isEqualTo: true)
+        .get();
+  }
 }
