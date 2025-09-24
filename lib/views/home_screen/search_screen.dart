@@ -27,8 +27,6 @@ class SearchScreen extends StatelessWidget {
             return Center(
               child: loadingIndicator(),
             );
-          } else if (snapshot.data!.docs.isEmpty) {
-            return "No products found".text.makeCentered();
           } else {
             var data = snapshot.data!.docs;
             var filtered = data
@@ -39,6 +37,10 @@ class SearchScreen extends StatelessWidget {
                       .contains(title.toLowerCase()),
                 )
                 .toList();
+
+            if (filtered.isEmpty) {
+              return "No products found".text.makeCentered();
+            }
 
             return Padding(
               padding: const EdgeInsets.all(8.0),

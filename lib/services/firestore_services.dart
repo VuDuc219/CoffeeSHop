@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:myapp/consts/firebase_consts.dart';
 
 class FirestoreServices {
@@ -58,7 +59,6 @@ class FirestoreServices {
         .snapshots();
   }
 
-  // Methods to get all orders and wishlists for the current user
   static getAllOrders() {
     return firestore
         .collection(ordersCollection)
@@ -82,5 +82,59 @@ class FirestoreServices {
 
   static searchProducts() {
     return firestore.collection(productsCollection).get();
+  }
+
+  static Future<List<DocumentSnapshot>> getBestSellingProducts() async {
+    final ordersSnapshot = await firestore.collection(ordersCollection).get();
+
+    if (ordersSnapshot.docs.isEmpty) {
+      return [];
+    }
+
+    final Map<String, int> productQuantities = {};
+
+    for (var orderDoc in ordersSnapshot.docs) {
+      final orderData = orderDoc.data();
+      if (orderData.containsKey('orders')) {
+        for (var item in orderData['orders']) {
+          if (item['title'] != null && item['qty'] != null) {
+            final String title = item['title'];
+            final int quantity = item['qty'];
+            productQuantities[title] =
+                (productQuantities[title] ?? 0) + quantity;
+          }
+        }
+      }
+    }
+
+    if (productQuantities.isEmpty) {
+      return [];
+    }
+
+    final sortedProducts = productQuantities.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    final topProductTitles = sortedProducts.take(6).map((e) => e.key).toList();
+
+    if (topProductTitles.isEmpty) {
+      return [];
+    }
+
+    final productsSnapshot = await firestore
+        .collection(productsCollection)
+        .where('p_name', whereIn: topProductTitles)
+        .get();
+
+    final sortedDocs = <DocumentSnapshot>[];
+    for (var title in topProductTitles) {
+      for (var doc in productsSnapshot.docs) {
+        if (doc['p_name'] == title) {
+          sortedDocs.add(doc);
+          break;
+        }
+      }
+    }
+
+    return sortedDocs;
   }
 }

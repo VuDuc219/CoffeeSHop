@@ -6,6 +6,7 @@ import 'package:myapp/consts/consts.dart';
 import 'package:myapp/controllers/home_controller.dart';
 import 'package:myapp/services/firestore_services.dart';
 import 'package:myapp/views/category_screen/item_details.dart';
+import 'package:myapp/views/home_screen/best_sellers_screen.dart';
 import 'package:myapp/views/home_screen/search_screen.dart';
 import 'package:myapp/views/widgets_common/home_button.dart';
 import 'package:myapp/views/widgets_common/loading_indicator.dart';
@@ -151,7 +152,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: context.screenHeight * 0.15,
                     icon: icBestSellers,
                     title: "Best Sellers",
-                    onPress: () {},
+                    onPress: () {
+                      Get.to(() => const BestSellersScreen());
+                    },
                   ),
                 ],
               ),
