@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:myapp/consts/firebase_consts.dart';
+import 'package:myapp/controllers/messages_controller.dart';
 import 'package:myapp/controllers/profile_controller.dart';
 
 class ChatsController extends GetxController {
@@ -15,12 +16,14 @@ class ChatsController extends GetxController {
   var isLoading = false.obs;
 
   var chats = firestore.collection(chatsCollection);
+  late final MessagesController messagesController;
 
   ChatsController({required this.friendName, required this.friendId});
 
   @override
   void onInit() {
     super.onInit();
+    messagesController = Get.find<MessagesController>();
     currentId = auth.currentUser!.uid;
     senderName = Get.find<ProfileController>().userName.value;
     createSecureChatRoom();
@@ -48,6 +51,8 @@ class ChatsController extends GetxController {
         'sender_name': senderName,
       });
     }
+    // Mark messages as read AFTER chatDocId is confirmed.
+    await messagesController.markMessagesAsRead(chatDocId);
 
     isLoading(false);
   }
@@ -61,6 +66,7 @@ class ChatsController extends GetxController {
           'created_on': FieldValue.serverTimestamp(),
           'msg': msg,
           'uid': currentId,
+          'read': false,
         });
 
         await chatDocument.update({
