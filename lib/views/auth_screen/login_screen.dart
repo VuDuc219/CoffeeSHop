@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:myapp/controllers/auth_controller.dart';
+import 'package:myapp/controllers/cart_controller.dart';
 import 'package:myapp/controllers/profile_controller.dart';
 import 'package:myapp/views/admin_screen/home_screen/home.dart';
 import 'package:myapp/views/auth_screen/signup_screen.dart';
@@ -114,6 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   if (userCredential != null) {
                     Get.put(ProfileController());
+                    Get.put(CartController()); 
                     VxToast.show(context, msg: "Logged in successfully");
 
                     if (_emailController.text == "admin@gmail.com") {
