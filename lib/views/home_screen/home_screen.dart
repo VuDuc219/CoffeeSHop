@@ -1,13 +1,16 @@
+import 'package:badges/badges.dart' as badges;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:myapp/consts/consts.dart';
 import 'package:myapp/controllers/home_controller.dart';
+import 'package:myapp/controllers/notification_controller.dart';
 import 'package:myapp/services/firestore_services.dart';
 import 'package:myapp/views/category_screen/item_details.dart';
 import 'package:myapp/views/home_screen/best_sellers_screen.dart';
 import 'package:myapp/views/home_screen/search_screen.dart';
+import 'package:myapp/views/notification_screen/notification_screen.dart';
 import 'package:myapp/views/widgets_common/home_button.dart';
 import 'package:myapp/views/widgets_common/loading_indicator.dart';
 
@@ -31,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(HomeController());
+    final notificationController = Get.find<NotificationController>();
     final primaryColor = Theme.of(context).primaryColor;
 
     return Container(
@@ -102,16 +106,24 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    // Notification icon
-                    IconButton(
-                      icon: const Icon(
-                        Icons.notifications_outlined,
-                        color: Colors.grey,
-                      ),
-                      onPressed: () {
-                        // Notification action
-                      },
-                    ),
+                    // Notification icon with badge
+                    Obx(() => badges.Badge(
+                          showBadge: notificationController.totalNotifications > 0,
+                          badgeContent: Text(
+                            notificationController.totalNotifications.toString(),
+                            style: const TextStyle(color: Colors.white, fontSize: 10),
+                          ),
+                          position: badges.BadgePosition.topEnd(top: -5, end: -5),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.notifications_outlined,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () {
+                              Get.to(() => const NotificationScreen());
+                            },
+                          ),
+                        )),
                   ],
                 ),
               ),

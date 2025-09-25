@@ -14,7 +14,9 @@ class CartScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xff27221f),
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        iconTheme: const IconThemeData(
+          color: Colors.white, // Set back button color to white
+        ),
         title: const Text(
           'Shopping Cart',
           style: TextStyle(fontFamily: semibold, color: Colors.white),
@@ -81,6 +83,8 @@ class CartScreen extends StatelessWidget {
                       ),
                       title: Text(
                         itemData['title'] ?? 'No Title',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontFamily: bold, fontSize: 16, color: Colors.white),
                       ),
                       subtitle: Column(
@@ -88,7 +92,7 @@ class CartScreen extends StatelessWidget {
                         children: [
                           Text(
                             'Size: ${itemData['size'] ?? 'N/A'}',
-                            style: const TextStyle(color: Colors.white70),
+                            style: const TextStyle(color: Colors.white70), // Set size color
                           ),
                           Text(
                             '$tprice VND',

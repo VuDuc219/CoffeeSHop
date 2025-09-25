@@ -1,1 +1,5 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"coffeshop-a45d8","appId":"1:931842908252:android:0d2f47b4352d72cc078699","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"coffeshop-a45d8","configurations":{"android":"1:931842908252:android:0d2f47b4352d72cc078699","web":"1:931842908252:web:23724d77ce738aa4078699"}}}}}}
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}
