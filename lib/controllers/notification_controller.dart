@@ -5,13 +5,11 @@ import 'package:myapp/controllers/messages_controller.dart';
 import 'package:myapp/views/cart_screen/cart_screen.dart';
 import 'package:myapp/views/chat_screen/chat_screen.dart';
 
-// A simple model to represent a notification
 class NotificationModel {
   final String title;
   final String subtitle;
   final Function onTap;
-  final String type; // Used to prevent duplicate notifications (e.g., 'cart', 'message')
-
+  final String type;
   NotificationModel({
     required this.title,
     required this.subtitle,
@@ -21,13 +19,10 @@ class NotificationModel {
 }
 
 class NotificationController extends GetxController {
-  // A reactive list of notifications
   final notifications = <NotificationModel>[].obs;
 
-  // A getter to easily access the total count
   int get totalNotifications => notifications.length;
 
-  // Find the controllers we need to listen to
   final MessagesController _messagesController = Get.find<MessagesController>();
   final CartController _cartController = Get.find<CartController>();
 
@@ -60,19 +55,14 @@ class NotificationController extends GetxController {
       notifications.add(
         NotificationModel(
           title: "You have a new message",
-          subtitle: "You have ${_messagesController.unreadCount.value} unread message(s). Tap to view.",
+          subtitle:
+              "You have ${_messagesController.unreadCount.value} unread message(s). Tap to view.",
           onTap: () {
-            // The user is acting on this notification, so remove it immediately.
             notifications.removeWhere((n) => n.type == 'message');
 
-            // Then, perform the background task of marking messages as read.
             _messagesController.markMessagesAsRead(chatDocId);
 
-            // Finally, navigate to the chat screen.
-            Get.to(() => ChatScreen(
-                  friendName: "admin",
-                  friendId: adminId,
-                ));
+            Get.to(() => ChatScreen(friendName: "admin", friendId: adminId));
           },
           type: 'message',
         ),
@@ -81,14 +71,14 @@ class NotificationController extends GetxController {
   }
 
   void _updateCartNotification() {
-    // Remove any existing cart notification
     notifications.removeWhere((notification) => notification.type == 'cart');
 
     if (_cartController.products.isNotEmpty) {
       notifications.add(
         NotificationModel(
           title: "Items in your cart",
-          subtitle: "You have ${_cartController.products.length} item(s) waiting. Tap to checkout.",
+          subtitle:
+              "You have ${_cartController.products.length} item(s) waiting. Tap to checkout.",
           onTap: () => Get.to(() => const CartScreen()),
           type: 'cart',
         ),

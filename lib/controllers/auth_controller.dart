@@ -74,6 +74,19 @@ class AuthController extends GetxController {
     });
   }
 
+   Future<void> resetPassword(String email) async {
+    isloading.value = true;
+    try {
+      await auth.sendPasswordResetEmail(email: email);
+      Get.snackbar("Success", "Password reset email sent. Please check your inbox.");
+    } on FirebaseAuthException catch (e) {
+      Get.snackbar("Error sending email", e.toString());
+    } finally {
+      isloading.value = false;
+    }
+  }
+
+
   // FIXED: Removed unused context parameter
   Future<void> signOutMethod() async {
     try {

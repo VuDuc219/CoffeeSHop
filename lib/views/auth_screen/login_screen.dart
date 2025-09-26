@@ -23,6 +23,68 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final AuthController _authController = Get.put(AuthController());
 
+  void _showForgotPasswordDialog(BuildContext context) {
+    final TextEditingController resetEmailController = TextEditingController();
+    Get.defaultDialog(
+      title: "Forgot Password",
+      titleStyle: const TextStyle(color: Color(0xFF6f4e37), fontWeight: FontWeight.bold),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text("Enter your email to get a password reset link."),
+          const SizedBox(height: 20),
+          TextFormField(
+            controller: resetEmailController,
+            decoration: InputDecoration(
+              hintText: 'your.email@example.com',
+              prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF6f4e37)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: const BorderSide(color: Color(0xFF6f4e37)),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Email cannot be empty";
+              }
+              if (!GetUtils.isEmail(value)) {
+                return "Please enter a valid email";
+              }
+              return null;
+            },
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+          )
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Get.back(),
+          child: const Text("Cancel", style: TextStyle(color: Color(0xFF6f4e37))),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (resetEmailController.text.isNotEmpty && GetUtils.isEmail(resetEmailController.text)) {
+              _authController.resetPassword(resetEmailController.text.trim());
+              Get.back(); // Close dialog
+            } else {
+              Get.snackbar("Error", "Please enter a valid email address.");
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF6f4e37),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+          ),
+          child: const Text("Send", style: TextStyle(color: Colors.white)),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {},
+                onPressed: () => _showForgotPasswordDialog(context),
                 child: const Text(
                   'Forgot Password?',
                   style: TextStyle(color: Color(0xFF6f4e37)),
@@ -138,9 +200,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              child: const Text(
-                'Log in',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+              child: Obx(
+                () => _authController.isloading.value
+                    ? const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(Colors.white),
+                      )
+                    : const Text(
+                        'Log in',
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
               ),
             ),
             const SizedBox(height: 20),

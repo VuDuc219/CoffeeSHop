@@ -10,11 +10,10 @@ class CartController extends GetxController {
   var totalP = 0.obs;
   var totalItems = 0.obs; // Add this line
 
-  // Controllers for shipping details - Simplified
+
   final addressController = TextEditingController();
   final phoneController = TextEditingController();
 
-  // Variable for payment method selection
   var paymentIndex = 0.obs;
   late dynamic productSnapshot;
   var placingOrder = false.obs;

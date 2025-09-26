@@ -14,7 +14,6 @@ class MessagesController extends GetxController {
   void onInit() {
     super.onInit();
 
-    // Listen for future auth state changes.
     auth.authStateChanges().listen((user) {
       if (user != null) {
         _listenToChatRooms(user.uid);
@@ -23,7 +22,6 @@ class MessagesController extends GetxController {
       }
     });
 
-    // Immediately check for a logged-in user in case the app starts already authenticated.
     final currentUser = auth.currentUser;
     if (currentUser != null) {
       _listenToChatRooms(currentUser.uid);
@@ -31,26 +29,35 @@ class MessagesController extends GetxController {
   }
 
   void _listenToChatRooms(String userId) {
-    _stopAllListeners(); // Stop any existing listeners to prevent duplicates
+    _stopAllListeners();
 
-    final query = firestore.collection(chatsCollection).where('users', arrayContains: userId);
+    final query = firestore
+        .collection(chatsCollection)
+        .where('users', arrayContains: userId);
 
-    _chatRoomsSubscription = query.snapshots().listen((chatRoomsSnapshot) {
-      _updateMessageListeners(chatRoomsSnapshot.docs, userId);
-    }, onError: (error) {
-      print("Error listening to chat rooms: $error");
-    });
+    _chatRoomsSubscription = query.snapshots().listen(
+      (chatRoomsSnapshot) {
+        _updateMessageListeners(chatRoomsSnapshot.docs, userId);
+      },
+      onError: (error) {
+        print("Error listening to chat rooms: $error");
+      },
+    );
   }
 
-  void _updateMessageListeners(List<QueryDocumentSnapshot> rooms, String userId) {
+  void _updateMessageListeners(
+    List<QueryDocumentSnapshot> rooms,
+    String userId,
+  ) {
     final currentRoomIds = rooms.map((r) => r.id).toSet();
-
-    // Stop listening to rooms the user has left
-    _messageSubscriptions.keys.where((roomId) => !currentRoomIds.contains(roomId)).toList().forEach((staleRoomId) {
-      _messageSubscriptions[staleRoomId]?.cancel();
-      _messageSubscriptions.remove(staleRoomId);
-      _unreadCountsPerChat.remove(staleRoomId);
-    });
+    _messageSubscriptions.keys
+        .where((roomId) => !currentRoomIds.contains(roomId))
+        .toList()
+        .forEach((staleRoomId) {
+          _messageSubscriptions[staleRoomId]?.cancel();
+          _messageSubscriptions.remove(staleRoomId);
+          _unreadCountsPerChat.remove(staleRoomId);
+        });
 
     // Start listening to new rooms
     for (var room in rooms) {
@@ -60,7 +67,9 @@ class MessagesController extends GetxController {
             .where('read', isEqualTo: false)
             .where('uid', isNotEqualTo: userId);
 
-        _messageSubscriptions[room.id] = unreadQuery.snapshots().listen((messagesSnapshot) {
+        _messageSubscriptions[room.id] = unreadQuery.snapshots().listen((
+          messagesSnapshot,
+        ) {
           _unreadCountsPerChat[room.id] = messagesSnapshot.docs.length;
           _recalculateTotalUnreadCount();
         });
@@ -87,7 +96,10 @@ class MessagesController extends GetxController {
     }
 
     try {
-      final messagesRef = firestore.collection(chatsCollection).doc(chatDocId).collection(messagesCollection);
+      final messagesRef = firestore
+          .collection(chatsCollection)
+          .doc(chatDocId)
+          .collection(messagesCollection);
       final unreadMessages = await messagesRef
           .where('read', isEqualTo: false)
           .where('uid', isNotEqualTo: currentUser.uid)

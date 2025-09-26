@@ -11,11 +11,9 @@ import 'package:path/path.dart';
 class ProfileController extends GetxController {
   var isLoading = false.obs;
 
-  // --- Local State Management for UI --- 
   final RxInt unreadMessageCount = 0.obs;
   StreamSubscription<QuerySnapshot>? _unreadMessagesSubscription;
 
-  // --- User Profile Data ---
   final Rx<String> userName = ''.obs;
   final Rx<String> userEmail = ''.obs;
   final Rx<String> profileImageUrl = ''.obs;

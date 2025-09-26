@@ -35,12 +35,13 @@ class ProductController extends GetxController {
     }
   }
 
-  // Updated initData to accept sale percentage
   void initData(List<dynamic> prices, dynamic sale) {
     quantity.value = 1;
     sizeIndex.value = 0;
     userRating.value = 0.0;
-    priceList.value = prices.map((p) => int.tryParse(p.toString()) ?? 0).toList();
+    priceList.value = prices
+        .map((p) => int.tryParse(p.toString()) ?? 0)
+        .toList();
     salePercentage.value = int.tryParse(sale.toString()) ?? 0;
     calculateTotalPrice();
   }
@@ -64,7 +65,6 @@ class ProductController extends GetxController {
     }
   }
 
-  // Updated calculateTotalPrice to apply discount
   void calculateTotalPrice() {
     if (priceList.isNotEmpty && sizeIndex.value < priceList.length) {
       int basePrice = priceList[sizeIndex.value];
@@ -92,14 +92,14 @@ class ProductController extends GetxController {
 
   addToWishlist(docId, context) async {
     await firestore.collection(productsCollection).doc(docId).set({
-      'p_wishlist': FieldValue.arrayUnion([auth.currentUser!.uid])
+      'p_wishlist': FieldValue.arrayUnion([auth.currentUser!.uid]),
     }, SetOptions(merge: true));
     VxToast.show(context, msg: "Added to wishlist");
   }
 
   removeFromWishlist(docId, context) async {
     await firestore.collection(productsCollection).doc(docId).set({
-      'p_wishlist': FieldValue.arrayRemove([auth.currentUser!.uid])
+      'p_wishlist': FieldValue.arrayRemove([auth.currentUser!.uid]),
     }, SetOptions(merge: true));
     VxToast.show(context, msg: "Removed from wishlist");
   }

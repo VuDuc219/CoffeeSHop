@@ -34,16 +34,18 @@ class ChatController extends GetxController {
         .limit(1)
         .get()
         .then((QuerySnapshot snapshot) {
-      if (snapshot.docs.isNotEmpty) {
-        chatDocId = snapshot.docs.single.id;
-      } else {
-        chats.add({
-          'users': {friendId: null, currentId.value: null},
-          'friend_name': friendName,
-          'sender_name': senderName.value,
-        }).then((value) => {chatDocId = value});
-      }
-    });
+          if (snapshot.docs.isNotEmpty) {
+            chatDocId = snapshot.docs.single.id;
+          } else {
+            chats
+                .add({
+                  'users': {friendId: null, currentId.value: null},
+                  'friend_name': friendName,
+                  'sender_name': senderName.value,
+                })
+                .then((value) => {chatDocId = value});
+          }
+        });
   }
 
   sendMessage(String msg) async {
@@ -56,7 +58,6 @@ class ChatController extends GetxController {
     }
   }
 
-  // Function to mark messages as read for a specific chat
   void markMessagesAsRead(String chatDocId) {
     var chatRef = chats.doc(chatDocId).collection(messagesCollection);
     chatRef.where('uid', isNotEqualTo: currentId.value).get().then((snapshot) {
