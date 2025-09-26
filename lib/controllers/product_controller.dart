@@ -10,6 +10,7 @@ class ProductController extends GetxController {
   var totalPrice = 0.obs;
   var priceList = <int>[].obs;
   var userRating = 0.0.obs;
+  var salePercentage = 0.obs; // To store sale percentage
 
   addToCart({
     required String title,
@@ -34,13 +35,13 @@ class ProductController extends GetxController {
     }
   }
 
-  void initData(List<dynamic> prices) {
+  // Updated initData to accept sale percentage
+  void initData(List<dynamic> prices, dynamic sale) {
     quantity.value = 1;
     sizeIndex.value = 0;
     userRating.value = 0.0;
-    priceList.value = prices
-        .map((p) => int.tryParse(p.toString()) ?? 0)
-        .toList();
+    priceList.value = prices.map((p) => int.tryParse(p.toString()) ?? 0).toList();
+    salePercentage.value = int.tryParse(sale.toString()) ?? 0;
     calculateTotalPrice();
   }
 
@@ -63,12 +64,26 @@ class ProductController extends GetxController {
     }
   }
 
+  // Updated calculateTotalPrice to apply discount
   void calculateTotalPrice() {
     if (priceList.isNotEmpty && sizeIndex.value < priceList.length) {
-      totalPrice.value = priceList[sizeIndex.value] * quantity.value;
+      int basePrice = priceList[sizeIndex.value];
+      num finalPrice = basePrice;
+      if (salePercentage.value > 0) {
+        finalPrice = basePrice - (basePrice * salePercentage.value / 100);
+      }
+      totalPrice.value = (finalPrice * quantity.value).round();
     } else {
       totalPrice.value = 0;
     }
+  }
+
+  // Method to get the original price before discount
+  int getOriginalPrice() {
+    if (priceList.isNotEmpty && sizeIndex.value < priceList.length) {
+      return priceList[sizeIndex.value] * quantity.value;
+    }
+    return 0;
   }
 
   void updateUserRating(double rating) {

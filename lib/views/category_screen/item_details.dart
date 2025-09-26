@@ -22,9 +22,11 @@ class _ItemDetailsState extends State<ItemDetails> {
   void initState() {
     super.initState();
     controller = Get.put(ProductController());
-    controller.initData(widget.data['p_price'] as List<dynamic>? ?? []);
+    controller.initData(
+      widget.data['p_price'] as List<dynamic>? ?? [],
+      widget.data['p_sale'],
+    );
 
-    // Check if the item is already in the wishlist
     List<dynamic> wishlist = widget.data['p_wishlist'] ?? [];
     isWishlist = wishlist.contains(auth.currentUser!.uid);
   }
@@ -104,6 +106,45 @@ class _ItemDetailsState extends State<ItemDetails> {
                   color: darkFontGrey,
                 ),
               ),
+              const SizedBox(height: 10),
+              Obx(() {
+                int originalPrice = controller.getOriginalPrice();
+                int finalPrice = controller.totalPrice.value;
+                bool onSale = controller.salePercentage.value > 0;
+
+                if (!onSale) {
+                  return Text(
+                    '${finalPrice}đ',
+                    style: const TextStyle(
+                      fontFamily: bold,
+                      fontSize: 24,
+                      color: redColor,
+                    ),
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Text(
+                      '${originalPrice}đ',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: Colors.grey,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${finalPrice}đ',
+                      style: const TextStyle(
+                        fontFamily: bold,
+                        fontSize: 24,
+                        color: redColor,
+                      ),
+                    ),
+                  ],
+                );
+              }),
               const SizedBox(height: 20),
               const Text(
                 'Your Rating',

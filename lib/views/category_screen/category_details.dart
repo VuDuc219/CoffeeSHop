@@ -47,6 +47,15 @@ class CategoryDetails extends StatelessWidget {
               itemBuilder: (context, index) {
                 var productData = data[index].data() as Map<String, dynamic>;
                 productData['id'] = data[index].id;
+
+                int originalPrice = int.tryParse(productData['p_price'][0].toString()) ?? 0;
+                int salePercentage = int.tryParse(productData['p_sale'].toString()) ?? 0;
+                bool onSale = salePercentage > 0;
+                num finalPrice = originalPrice;
+                if (onSale) {
+                  finalPrice = originalPrice * (1 - salePercentage / 100);
+                }
+
                 return InkWell(
                   onTap: () {
                     Get.to(() => ItemDetails(data: productData));
@@ -80,22 +89,45 @@ class CategoryDetails extends StatelessWidget {
                         ),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            NumberFormat.currency(
-                              locale: 'vi_VN',
-                              symbol: 'VND',
-                            ).format(
-                              num.tryParse(
-                                    productData['p_price'][0].toString(),
-                                  ) ??
-                                  0,
-                            ),
-                            style: const TextStyle(
-                              fontFamily: bold,
-                              color: redColor,
-                              fontSize: 16,
-                            ),
-                          ),
+                          child: onSale
+                              ? Row(
+                                  children: [
+                                    Text(
+                                      NumberFormat.currency(
+                                        locale: 'vi_VN',
+                                        symbol: 'VND',
+                                      ).format(originalPrice),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
+                                        decoration: TextDecoration.lineThrough,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      NumberFormat.currency(
+                                        locale: 'vi_VN',
+                                        symbol: 'VND',
+                                      ).format(finalPrice.round()),
+                                      style: const TextStyle(
+                                        fontFamily: bold,
+                                        color: redColor,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Text(
+                                  NumberFormat.currency(
+                                    locale: 'vi_VN',
+                                    symbol: 'VND',
+                                  ).format(originalPrice),
+                                  style: const TextStyle(
+                                    fontFamily: bold,
+                                    color: redColor,
+                                    fontSize: 16,
+                                  ),
+                                ),
                         ),
                       ],
                     ),
