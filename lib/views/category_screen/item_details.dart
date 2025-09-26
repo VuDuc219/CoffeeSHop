@@ -8,7 +8,7 @@ import 'package:myapp/consts/firebase_consts.dart';
 class ItemDetails extends StatefulWidget {
   final Map<String, dynamic> data;
 
-  const ItemDetails({Key? key, required this.data}) : super(key: key);
+  const ItemDetails({super.key, required this.data});
 
   @override
   State<ItemDetails> createState() => _ItemDetailsState();

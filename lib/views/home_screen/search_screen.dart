@@ -63,7 +63,7 @@ class SearchScreen extends StatelessWidget {
                         .toList();
                     double minPrice = numericPrices.reduce(min);
                     if (minPrice != double.infinity) {
-                      displayPrice = "${minPrice.toStringAsFixed(0)}";
+                      displayPrice = minPrice.toStringAsFixed(0);
                     }
                   }
 
@@ -83,7 +83,7 @@ class SearchScreen extends StatelessWidget {
                           .color(darkFontGrey)
                           .make(),
                       10.heightBox,
-                      "$displayPrice"
+                      displayPrice
                           .text
                           .color(redColor)
                           .fontFamily(bold)

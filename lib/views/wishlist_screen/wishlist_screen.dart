@@ -9,7 +9,7 @@ import 'package:myapp/views/widgets_common/loading_indicator.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 class WishlistScreen extends StatelessWidget {
-  const WishlistScreen({Key? key}) : super(key: key);
+  const WishlistScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

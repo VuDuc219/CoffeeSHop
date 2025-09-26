@@ -7,7 +7,7 @@ import 'package:myapp/controllers/profile_controller.dart';
 import 'package:myapp/views/chat_screen/chat_screen.dart';
 
 class AdminMessagesScreen extends StatelessWidget {
-  AdminMessagesScreen({super.key});
+  const AdminMessagesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

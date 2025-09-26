@@ -9,7 +9,7 @@ import 'package:myapp/views/widgets_common/loading_indicator.dart';
 
 class CategoryDetails extends StatelessWidget {
   final String title;
-  const CategoryDetails({Key? key, required this.title}) : super(key: key);
+  const CategoryDetails({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {

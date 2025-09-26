@@ -7,7 +7,7 @@ import 'package:myapp/views/category_screen/category_details.dart';
 import 'dart:developer' as developer;
 
 class CategoryScreen extends StatelessWidget {
-  const CategoryScreen({Key? key}) : super(key: key);
+  const CategoryScreen({super.key});
 
   Future<List<Category>> _loadCategories() async {
     try {

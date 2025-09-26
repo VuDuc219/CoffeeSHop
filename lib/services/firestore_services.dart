@@ -83,6 +83,13 @@ class FirestoreServices {
   static searchProducts() {
     return firestore.collection(productsCollection).get();
   }
+  
+  static getSaleProducts() {
+    return firestore
+        .collection(productsCollection)
+        .where('p_sale', isNotEqualTo: '')
+        .snapshots();
+  }
 
   static Future<List<DocumentSnapshot>> getBestSellingProducts() async {
     final ordersSnapshot = await firestore.collection(ordersCollection).get();

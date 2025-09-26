@@ -5,7 +5,7 @@ import 'package:myapp/controllers/cart_controller.dart';
 import 'package:myapp/views/cart_screen/shipping_screen.dart'; // Import the new screen
 
 class CartScreen extends StatelessWidget {
-  const CartScreen({Key? key}) : super(key: key);
+  const CartScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

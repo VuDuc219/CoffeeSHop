@@ -5,7 +5,7 @@ import 'package:myapp/controllers/cart_controller.dart';
 import 'package:myapp/views/home_screen/home.dart';
 
 class PaymentMethods extends StatelessWidget {
-  const PaymentMethods({Key? key}) : super(key: key);
+  const PaymentMethods({super.key});
 
   @override
   Widget build(BuildContext context) {
