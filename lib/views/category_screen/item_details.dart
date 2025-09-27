@@ -4,6 +4,7 @@ import 'package:myapp/consts/consts.dart';
 import 'package:myapp/controllers/product_controller.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:myapp/consts/firebase_consts.dart';
+import 'package:myapp/controllers/item_details_controller.dart';
 
 class ItemDetails extends StatefulWidget {
   final Map<String, dynamic> data;
@@ -15,37 +16,39 @@ class ItemDetails extends StatefulWidget {
 }
 
 class _ItemDetailsState extends State<ItemDetails> {
-  late final ProductController controller;
+  late final ProductController productController;
+  late final ItemDetailsController ratingController;
   bool isWishlist = false;
+  double _currentRating = 0.0; // To hold the user's tentative rating before submitting
 
   @override
   void initState() {
     super.initState();
-    controller = Get.put(ProductController());
-    controller.initData(
+    productController = Get.put(ProductController());
+    productController.initData(
       widget.data['p_price'] as List<dynamic>? ?? [],
       widget.data['p_sale'],
     );
 
+    // Initialize the new rating controller
+    ratingController = Get.put(ItemDetailsController(productId: widget.data['id']));
+
     List<dynamic> wishlist = widget.data['p_wishlist'] ?? [];
-    isWishlist = wishlist.contains(auth.currentUser!.uid);
+    if (auth.currentUser != null) {
+      isWishlist = wishlist.contains(auth.currentUser!.uid);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final String productName = widget.data['p_name'] as String? ?? 'No Name';
-    final List<dynamic> imageUrls =
-        widget.data['p_imgs'] as List<dynamic>? ?? [];
+    final List<dynamic> imageUrls = widget.data['p_imgs'] as List<dynamic>? ?? [];
     final List<dynamic> sizes = widget.data['p_size'] as List<dynamic>? ?? [];
-    final String description =
-        widget.data['p_desc'] as String? ?? 'No description available.';
-    final int availableStock =
-        int.tryParse(widget.data['p_quantity'].toString()) ?? 0;
+    final String description = widget.data['p_desc'] as String? ?? 'No description available.';
+    final int availableStock = int.tryParse(widget.data['p_quantity'].toString()) ?? 0;
     final String docId = widget.data['id'] as String;
 
-    String detailImageUrl = (imageUrls.length > 1)
-        ? imageUrls[1]
-        : (imageUrls.isNotEmpty ? imageUrls[0] : '');
+    String detailImageUrl = (imageUrls.length > 1) ? imageUrls[1] : (imageUrls.isNotEmpty ? imageUrls[0] : '');
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -54,24 +57,22 @@ class _ItemDetailsState extends State<ItemDetails> {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Get.back(),
         ),
-        title: Text(
-          productName,
-          style: const TextStyle(color: darkFontGrey, fontFamily: bold),
-        ),
+        title: Text(productName, style: const TextStyle(color: darkFontGrey, fontFamily: bold)),
         actions: [
           IconButton(
-            icon: Icon(
-              isWishlist ? Icons.favorite : Icons.favorite_border,
-              color: isWishlist ? Colors.red : Colors.black,
-            ),
+            icon: Icon(isWishlist ? Icons.favorite : Icons.favorite_border, color: isWishlist ? Colors.red : Colors.black),
             onPressed: () {
+              if (auth.currentUser == null) {
+                Get.snackbar("Login Required", "You must be logged in to manage your wishlist.");
+                return;
+              }
               setState(() {
                 isWishlist = !isWishlist;
               });
               if (isWishlist) {
-                controller.addToWishlist(docId, context);
+                productController.addToWishlist(docId, context);
               } else {
-                controller.removeFromWishlist(docId, context);
+                productController.removeFromWishlist(docId, context);
               }
             },
           ),
@@ -79,256 +80,203 @@ class _ItemDetailsState extends State<ItemDetails> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 300,
-                child: Center(
-                  child: detailImageUrl.isNotEmpty
-                      ? Image.network(detailImageUrl, fit: BoxFit.contain)
-                      : const Icon(
-                          Icons.image_not_supported,
-                          size: 100,
-                          color: Colors.grey,
+      body: Obx(() {
+        if (ratingController.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 300,
+                  child: Center(
+                    child: detailImageUrl.isNotEmpty
+                        ? Image.network(detailImageUrl, fit: BoxFit.contain)
+                        : const Icon(Icons.image_not_supported, size: 100, color: Colors.grey),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(productName, style: const TextStyle(fontFamily: bold, fontSize: 24, color: darkFontGrey)),
+                const SizedBox(height: 10),
+                // WIDGET FOR AVERAGE RATING
+                Obx(() => Row(
+                      children: [
+                        RatingBar.builder(
+                          initialRating: ratingController.avgRating.value,
+                          minRating: 1,
+                          direction: Axis.horizontal,
+                          allowHalfRating: true,
+                          itemCount: 5,
+                          itemSize: 20,
+                          ignoreGestures: true, // Read-only
+                          itemBuilder: (context, _) => const Icon(Icons.star, color: Colors.amber),
+                          onRatingUpdate: (rating) {},
                         ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                productName,
-                style: const TextStyle(
-                  fontFamily: bold,
-                  fontSize: 24,
-                  color: darkFontGrey,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Obx(() {
-                int originalPrice = controller.getOriginalPrice();
-                int finalPrice = controller.totalPrice.value;
-                bool onSale = controller.salePercentage.value > 0;
-
-                if (!onSale) {
-                  return Text(
-                    '${finalPrice}đ',
-                    style: const TextStyle(
-                      fontFamily: bold,
-                      fontSize: 24,
-                      color: redColor,
-                    ),
+                        const SizedBox(width: 10),
+                        Text("(${ratingController.ratingCount.value} Ratings)", style: const TextStyle(fontFamily: semibold, color: fontGrey)),
+                      ],
+                    )),
+                const SizedBox(height: 10),
+                Obx(() {
+                  int originalPrice = productController.getOriginalPrice();
+                  int finalPrice = productController.totalPrice.value;
+                  bool onSale = productController.salePercentage.value > 0;
+                  if (!onSale) {
+                    return Text('${finalPrice}đ', style: const TextStyle(fontFamily: bold, fontSize: 24, color: redColor));
+                  }
+                  return Row(
+                    children: [
+                      Text('${originalPrice}đ', style: const TextStyle(fontSize: 20, color: Colors.grey, decoration: TextDecoration.lineThrough)),
+                      const SizedBox(width: 8),
+                      Text('${finalPrice}đ', style: const TextStyle(fontFamily: bold, fontSize: 24, color: redColor)),
+                    ],
                   );
-                }
+                }),
+                const SizedBox(height: 20),
+                
+                // REPLACEMENT FOR THE OLD RATING SECTION
+                _buildUserRatingSection(),
 
-                return Row(
+                const SizedBox(height: 20),
+                const Text('Sizes', style: TextStyle(fontFamily: bold, fontSize: 18, color: darkFontGrey)),
+                const SizedBox(height: 10),
+                Obx(() => Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: List.generate(sizes.length, (index) {
+                        return ChoiceChip(
+                          label: Text(sizes[index].toString(), style: TextStyle(color: productController.sizeIndex.value == index ? Colors.white : Colors.black)),
+                          selected: productController.sizeIndex.value == index,
+                          onSelected: (selected) {
+                            if (selected) productController.changeSizeIndex(index);
+                          },
+                          selectedColor: Colors.deepPurple,
+                          backgroundColor: Colors.grey[200],
+                        );
+                      }),
+                    )),
+                const SizedBox(height: 20),
+                Row(
                   children: [
-                    Text(
-                      '${originalPrice}đ',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: Colors.grey,
-                        decoration: TextDecoration.lineThrough,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${finalPrice}đ',
-                      style: const TextStyle(
-                        fontFamily: bold,
-                        fontSize: 24,
-                        color: redColor,
-                      ),
-                    ),
+                    const Text('Quantity', style: TextStyle(fontFamily: bold, fontSize: 18, color: darkFontGrey)),
+                    const Spacer(),
+                    IconButton(onPressed: productController.decreaseQuantity, icon: const Icon(Icons.remove_circle_outline)),
+                    Obx(() => Text('${productController.quantity.value}', style: const TextStyle(fontSize: 18, fontFamily: bold))),
+                    IconButton(onPressed: () => productController.increaseQuantity(availableStock), icon: const Icon(Icons.add_circle_outline)),
                   ],
-                );
-              }),
-              const SizedBox(height: 20),
-              const Text(
-                'Your Rating',
-                style: TextStyle(
-                  fontFamily: bold,
-                  fontSize: 18,
-                  color: darkFontGrey,
                 ),
-              ),
-              const SizedBox(height: 10),
-              RatingBar.builder(
-                initialRating: 0,
-                minRating: 1,
-                direction: Axis.horizontal,
-                allowHalfRating: true,
-                itemCount: 5,
-                itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-                itemBuilder: (context, _) =>
-                    const Icon(Icons.star, color: Colors.amber),
-                onRatingUpdate: (rating) {
-                  controller.updateUserRating(rating);
-                },
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {
-                  Get.snackbar(
-                    'Review Submitted',
-                    'You rated this product ${controller.userRating.value} stars.',
-                  );
-                },
-                child: const Text('Submit Review'),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Sizes',
-                style: TextStyle(
-                  fontFamily: bold,
-                  fontSize: 18,
-                  color: darkFontGrey,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Obx(
-                () => Wrap(
-                  spacing: 8.0,
-                  runSpacing: 8.0,
-                  children: List.generate(sizes.length, (index) {
-                    return ChoiceChip(
-                      label: Text(
-                        sizes[index].toString(),
-                        style: TextStyle(
-                          color: controller.sizeIndex.value == index
-                              ? Colors.white
-                              : Colors.black,
-                        ),
-                      ),
-                      selected: controller.sizeIndex.value == index,
-                      onSelected: (selected) {
-                        if (selected) {
-                          controller.changeSizeIndex(index);
-                        }
-                      },
-                      selectedColor: Colors.deepPurple,
-                      backgroundColor: Colors.grey[200],
-                    );
-                  }),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  const Text(
-                    'Quantity',
-                    style: TextStyle(
-                      fontFamily: bold,
-                      fontSize: 18,
-                      color: darkFontGrey,
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: controller.decreaseQuantity,
-                    icon: const Icon(Icons.remove_circle_outline),
-                  ),
-                  Obx(
-                    () => Text(
-                      '${controller.quantity.value}',
-                      style: const TextStyle(fontSize: 18, fontFamily: bold),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () =>
-                        controller.increaseQuantity(availableStock),
-                    icon: const Icon(Icons.add_circle_outline),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Description',
-                style: TextStyle(
-                  fontFamily: bold,
-                  fontSize: 18,
-                  color: darkFontGrey,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                description,
-                style: const TextStyle(
-                  fontFamily: regular,
-                  fontSize: 16,
-                  color: fontGrey,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 30),
-            ],
+                const SizedBox(height: 20),
+                const Text('Description', style: TextStyle(fontFamily: bold, fontSize: 18, color: darkFontGrey)),
+                const SizedBox(height: 10),
+                Text(description, style: const TextStyle(fontFamily: regular, fontSize: 16, color: fontGrey, height: 1.5)),
+                const SizedBox(height: 30),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      }),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              spreadRadius: 1,
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), spreadRadius: 1, blurRadius: 10, offset: const Offset(0, -5))],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Obx(
-              () => Text(
-                '${controller.totalPrice.value} VND',
-                style: const TextStyle(
-                  fontFamily: bold,
-                  fontSize: 24,
-                  color: redColor,
-                ),
-              ),
-            ),
+            Obx(() => Text('${productController.totalPrice.value} VND', style: const TextStyle(fontFamily: bold, fontSize: 24, color: redColor))),
             SizedBox(
               width: 180,
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
-                  final String selectedSize = sizes.isNotEmpty
-                      ? sizes[controller.sizeIndex.value].toString()
-                      : 'Default Size';
-                  controller.addToCart(
+                   if (auth.currentUser == null) {
+                      Get.snackbar("Login Required", "You must be logged in to add items to the cart.");
+                      return;
+                   }
+                  final String selectedSize = sizes.isNotEmpty ? sizes[productController.sizeIndex.value].toString() : 'Default Size';
+                  productController.addToCart(
                     title: productName,
                     img: detailImageUrl,
                     size: selectedSize,
-                    qty: controller.quantity.value,
-                    tprice: controller.totalPrice.value,
+                    qty: productController.quantity.value,
+                    tprice: productController.totalPrice.value,
                     context: context,
                   );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: golden,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Add to Cart',
-                  style: TextStyle(
-                    fontFamily: bold,
-                    fontSize: 18,
-                    color: Colors.white,
-                  ),
-                ),
+                style: ElevatedButton.styleFrom(backgroundColor: golden, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                child: const Text('Add to Cart', style: TextStyle(fontFamily: bold, fontSize: 18, color: Colors.white)),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  // New widget for the user rating section
+  Widget _buildUserRatingSection() {
+    return Obx(() {
+       if (auth.currentUser == null) {
+         return const SizedBox.shrink(); // Don't show anything if not logged in
+       }
+
+      _currentRating = ratingController.yourRating.value;
+
+      if (!ratingController.hasPurchased.value) {
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.amber.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.amber, width: 1),
+          ),
+          child: const Center(
+            child: Text(
+              "You must purchase this product to rate it.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontFamily: semibold, color: Colors.black87),
+            ),
+          ),
+        );
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Your Rating', style: TextStyle(fontFamily: bold, fontSize: 18, color: darkFontGrey)),
+          const SizedBox(height: 10),
+          RatingBar.builder(
+            initialRating: _currentRating,
+            minRating: 1,
+            direction: Axis.horizontal,
+            allowHalfRating: false,
+            itemCount: 5,
+            itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+            itemBuilder: (context, _) => const Icon(Icons.star, color: Colors.amber),
+            onRatingUpdate: (rating) {
+              _currentRating = rating;
+            },
+          ),
+          const SizedBox(height: 10),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Obx(() => ElevatedButton(
+                  onPressed: ratingController.isSubmitting.value
+                      ? null // Disable button while submitting
+                      : () {
+                          ratingController.submitRating(_currentRating);
+                        },
+                  child: ratingController.isSubmitting.value
+                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Text('Submit Rating'),
+                )),
+          ),
+        ],
+      );
+    });
   }
 }
