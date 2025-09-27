@@ -203,6 +203,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
             ),
             const Divider(),
+             ListTile(
+              leading: const Icon(Icons.lock_outline, color: darkFontGrey),
+              title: const Text("Change Password",
+                  style: TextStyle(fontFamily: semibold, color: darkFontGrey)),
+              onTap: () => _showChangePasswordDialog(context, authController),
+            ),
+            const Divider(),
             ListTile(
               leading: const Icon(Icons.logout, color: darkFontGrey),
               title: const Text("Log out",
@@ -219,6 +226,86 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+
+  void _showChangePasswordDialog(
+      BuildContext context, AuthController controller) {
+    final _formKey = GlobalKey<FormState>();
+    final oldPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Change Password'),
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: oldPasswordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'Old Password'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your old password.';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: newPasswordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'New Password'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a new password.';
+                    }
+                    if (value.length < 6) {
+                      return 'Password must be at least 6 characters long.';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: confirmPasswordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'Confirm New Password'),
+                  validator: (value) {
+                    if (value != newPasswordController.text) {
+                      return 'Passwords do not match.';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                   controller.changePassword(
+                    oldPasswordController.text,
+                    newPasswordController.text,
+                  );
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   void _showEditProfileDialog(
       BuildContext context, ProfileController controller) {

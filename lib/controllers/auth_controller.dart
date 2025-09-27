@@ -86,6 +86,27 @@ class AuthController extends GetxController {
     }
   }
 
+    Future<void> changePassword(String oldPassword, String newPassword) async {
+    isloading.value = true;
+    try {
+      // Re-authenticate user
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: currentUser!.email!,
+        password: oldPassword,
+      );
+      await currentUser!.reauthenticateWithCredential(credential);
+
+      // Change password
+      await currentUser!.updatePassword(newPassword);
+
+      Get.snackbar("Success", "Your password has been changed successfully.");
+    } on FirebaseAuthException catch (e) {
+      Get.snackbar("Error changing password", e.toString());
+    } finally {
+      isloading.value = false;
+    }
+  }
+
 
   // FIXED: Removed unused context parameter
   Future<void> signOutMethod() async {
