@@ -52,10 +52,10 @@ class _HomeState extends State<Home> {
           BottomNavigationBarItem(
             icon: badges.Badge(
               badgeContent: Text(
-                _cartController.totalItems.value.toString(),
+                _cartController.uniqueItemCount.toString(),
                 style: const TextStyle(color: Colors.white, fontSize: 10),
               ),
-              showBadge: _cartController.totalItems.value > 0,
+              showBadge: _cartController.uniqueItemCount > 0,
               position: badges.BadgePosition.topEnd(top: -12, end: -12),
               child: const Icon(Icons.shopping_cart),
             ),

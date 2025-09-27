@@ -8,8 +8,9 @@ import 'package:myapp/controllers/home_controller.dart';
 class CartController extends GetxController {
   final RxList<DocumentSnapshot> products = <DocumentSnapshot>[].obs;
   var totalP = 0.obs;
-  var totalItems = 0.obs; // Add this line
+  var totalItems = 0.obs;
 
+  int get uniqueItemCount => products.length;
 
   final addressController = TextEditingController();
   final phoneController = TextEditingController();
@@ -35,7 +36,7 @@ class CartController extends GetxController {
         .listen(
           (snapshot) {
             products.assignAll(snapshot.docs);
-            calculateTotals(); // Change this line
+            calculateTotals();
             productSnapshot = snapshot.docs;
           },
           onError: (error) {
@@ -53,14 +54,12 @@ class CartController extends GetxController {
         if (data.containsKey('tprice')) {
           totalP.value += (data['tprice'] as num).toInt();
         }
-        // Use 'qty' to sum up total items
         if (data.containsKey('qty')) {
           totalItems.value += (data['qty'] as num).toInt();
         }
       }
     }
   }
-
 
   void changePaymentIndex(int index) {
     paymentIndex.value = index;
@@ -98,7 +97,7 @@ class CartController extends GetxController {
         'order_date': FieldValue.serverTimestamp(),
         'order_by': auth.currentUser!.uid,
         'order_by_name':
-            Get.find<HomeController>().username.value, // FIX: Added .value
+            Get.find<HomeController>().username.value,
         'order_by_email': auth.currentUser!.email,
         'order_by_address': addressController.text,
         'order_by_phone': phoneController.text,

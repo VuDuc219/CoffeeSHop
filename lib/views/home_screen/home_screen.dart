@@ -183,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white, // Changed color for visibility
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -199,14 +199,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   } else {
                     var featuredData = snapshot.data!.docs;
                     return SizedBox(
-                      height: 220, // Height of the product list
+                      height: 230, // Adjusted height for price display
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         itemCount: featuredData.length,
                         itemBuilder: (context, index) {
                           var doc = featuredData[index];
                           var product = doc.data() as Map<String, dynamic>;
-                          product['id'] = doc.id; // Add this line
+                          product['id'] = doc.id;
+
+                          // Price calculation logic
+                          num originalPrice =
+                              num.tryParse(product['p_price'][0].toString()) ?? 0;
+                          num salePercentage =
+                              num.tryParse(product['p_sale']?.toString() ?? '0') ?? 0;
+                          num salePrice = originalPrice;
+                          if (salePercentage > 0) {
+                            salePrice = originalPrice * (1 - salePercentage / 100);
+                          }
+
                           return Container(
                             margin: const EdgeInsets.only(right: 12),
                             width: 160,
@@ -227,19 +238,33 @@ class _HomeScreenState extends State<HomeScreen> {
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors
-                                        .white, // Changed color for visibility
+                                    color: Colors.white,
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                                 5.heightBox,
                                 // Product Price
-                                Text(
-                                  "${product['p_price'][0]}",
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white70,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                Row(
+                                  children: [
+                                    if (salePercentage > 0)
+                                      Text(
+                                        '${originalPrice.toStringAsFixed(0)}đ',
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          decoration: TextDecoration.lineThrough,
+                                        ),
+                                      ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${salePrice.toStringAsFixed(0)}đ',
+                                      style: const TextStyle(
+                                        color: Colors.amber, // Highlighted price
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
