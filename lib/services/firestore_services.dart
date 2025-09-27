@@ -27,6 +27,10 @@ class FirestoreServices {
     return firestore.collection(cartCollection).doc(docId).delete();
   }
 
+  static deleteProduct(docId) {
+    return firestore.collection(productsCollection).doc(docId).delete();
+  }
+
   static Future<int> getWishlistCount(String uid) async {
     var snapshot = await firestore
         .collection(productsCollection)

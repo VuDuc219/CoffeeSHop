@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:myapp/controllers/admin_home_controller.dart';
 import 'package:myapp/views/admin_screen/home_screen/home_screen.dart';
+import 'package:myapp/views/admin_screen/mgmt_product_screen/mgmt_product_screen.dart';
 import 'package:myapp/views/admin_screen/profile_screen/profile_screen.dart';
 
 class AdminHome extends StatelessWidget {
@@ -13,6 +14,7 @@ class AdminHome extends StatelessWidget {
 
     var navScreens = [
       const AdminHomeScreen(),
+      const MgmtProductScreen(),
       const AdminProfileScreen(),
     ];
 
@@ -20,6 +22,10 @@ class AdminHome extends StatelessWidget {
       const BottomNavigationBarItem(
         icon: Icon(Icons.home_outlined),
         label: "Home",
+      ),
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.shopping_bag_outlined),
+        label: "Products",
       ),
       const BottomNavigationBarItem(
         icon: Icon(Icons.person_outline),
