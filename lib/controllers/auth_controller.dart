@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:myapp/consts/firebase_consts.dart';
+import 'package:myapp/controllers/cart_controller.dart';
+import 'package:myapp/controllers/profile_controller.dart';
 
 class AuthController extends GetxController {
   var isloading = false.obs;
@@ -74,11 +76,14 @@ class AuthController extends GetxController {
     });
   }
 
-   Future<void> resetPassword(String email) async {
+  Future<void> resetPassword(String email) async {
     isloading.value = true;
     try {
       await auth.sendPasswordResetEmail(email: email);
-      Get.snackbar("Success", "Password reset email sent. Please check your inbox.");
+      Get.snackbar(
+        "Success",
+        "Password reset email sent. Please check your inbox.",
+      );
     } on FirebaseAuthException catch (e) {
       Get.snackbar("Error sending email", e.toString());
     } finally {
@@ -86,17 +91,15 @@ class AuthController extends GetxController {
     }
   }
 
-    Future<void> changePassword(String oldPassword, String newPassword) async {
+  Future<void> changePassword(String oldPassword, String newPassword) async {
     isloading.value = true;
     try {
-      // Re-authenticate user
       AuthCredential credential = EmailAuthProvider.credential(
         email: currentUser!.email!,
         password: oldPassword,
       );
       await currentUser!.reauthenticateWithCredential(credential);
 
-      // Change password
       await currentUser!.updatePassword(newPassword);
 
       Get.snackbar("Success", "Your password has been changed successfully.");
@@ -107,11 +110,13 @@ class AuthController extends GetxController {
     }
   }
 
-
-  // FIXED: Removed unused context parameter
   Future<void> signOutMethod() async {
     try {
       await auth.signOut();
+      if (Get.isRegistered<ProfileController>()) {
+        Get.delete<ProfileController>(force: true);
+        Get.delete<CartController>(force: true);
+      }
     } catch (e) {
       Get.snackbar("Error signing out", e.toString());
     }

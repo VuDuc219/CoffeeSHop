@@ -5,19 +5,26 @@ import 'package:myapp/controllers/profile_controller.dart';
 import 'package:myapp/views/auth_screen/login_screen.dart';
 import 'package:myapp/views/admin_screen/chat_screen/admin_messages_screen.dart';
 
-class AdminProfileScreen extends StatelessWidget {
+class AdminProfileScreen extends StatefulWidget {
   const AdminProfileScreen({super.key});
 
   @override
+  State<AdminProfileScreen> createState() => _AdminProfileScreenState();
+}
+
+class _AdminProfileScreenState extends State<AdminProfileScreen> {
+  final ProfileController controller = Get.find<ProfileController>();
+
+  @override
+  void initState() {
+    super.initState();
+    controller.loadUserData();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final ProfileController controller = Get.find<ProfileController>();
-
-    if (controller.userName.value.isEmpty) {
-      controller.loadUserData();
-    }
-
     return Obx(() {
-      if (controller.isLoading.value) {
+      if (controller.isLoading.value && controller.userName.value.isEmpty) {
         return const Scaffold(
           body: Center(child: CircularProgressIndicator(color: Colors.brown)),
         );
@@ -36,7 +43,6 @@ class AdminProfileScreen extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.logout, color: Colors.white),
               onPressed: () async {
-                Get.delete<ProfileController>();
                 await Get.find<AuthController>().signOutMethod();
                 Get.offAll(() => const LoginScreen());
               },
@@ -61,8 +67,8 @@ class AdminProfileScreen extends StatelessWidget {
                         backgroundColor: Colors.brown.shade100,
                         backgroundImage:
                             controller.profileImageUrl.value.isNotEmpty
-                            ? NetworkImage(controller.profileImageUrl.value)
-                            : null,
+                                ? NetworkImage(controller.profileImageUrl.value)
+                                : null,
                         child: controller.profileImageUrl.value.isEmpty
                             ? const Icon(
                                 Icons.person,

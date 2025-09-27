@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:developer' as developer;
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:myapp/consts/firebase_consts.dart';
@@ -19,7 +21,11 @@ class ProfileController extends GetxController {
   final Rx<String> profileImageUrl = ''.obs;
   final Rx<int> wishlistCount = 0.obs;
   final Rx<int> orderCount = 0.obs;
+
+  // For mobile
   var pickedImagePath = ''.obs;
+  // For web
+  var pickedImageBytes = Rx<Uint8List?>(null);
 
   @override
   void onInit() {
@@ -37,20 +43,22 @@ class ProfileController extends GetxController {
   }
 
   void _initializeStreams(String userId) {
-    _unreadMessagesSubscription?.cancel(); // Cancel any existing subscription
+    _unreadMessagesSubscription?.cancel();
     final stream = firestore
         .collectionGroup(messagesCollection)
         .where('toId', isEqualTo: userId)
         .where('read', isEqualTo: '')
         .snapshots();
 
-    // Listen to the stream and update the local count
-    _unreadMessagesSubscription = stream.listen((snapshot) {
-      unreadMessageCount.value = snapshot.docs.length;
-    }, onError: (error) {
-      developer.log("Error listening to unread messages", error: error);
-      unreadMessageCount.value = 0;
-    });
+    _unreadMessagesSubscription = stream.listen(
+      (snapshot) {
+        unreadMessageCount.value = snapshot.docs.length;
+      },
+      onError: (error) {
+        developer.log("Error listening to unread messages", error: error);
+        unreadMessageCount.value = 0;
+      },
+    );
   }
 
   Future<void> loadUserData() async {
@@ -69,7 +77,9 @@ class ProfileController extends GetxController {
           profileImageUrl.value = data['imageUrl'] ?? '';
         }
 
-        wishlistCount.value = await FirestoreServices.getWishlistCount(user.uid);
+        wishlistCount.value = await FirestoreServices.getWishlistCount(
+          user.uid,
+        );
         orderCount.value = await FirestoreServices.getOrderCount(user.uid);
       } catch (e) {
         Get.snackbar("Error", "Failed to load user data: $e");
@@ -106,7 +116,6 @@ class ProfileController extends GetxController {
     }
   }
 
-  // All other methods remain the same
   Future<void> pickImage() async {
     try {
       final pickedFile = await ImagePicker().pickImage(
@@ -114,19 +123,23 @@ class ProfileController extends GetxController {
         imageQuality: 50,
       );
       if (pickedFile != null) {
-        pickedImagePath.value = pickedFile.path;
-        await uploadProfilePicture();
+        if (kIsWeb) {
+          pickedImageBytes.value = await pickedFile.readAsBytes();
+        } else {
+          pickedImagePath.value = pickedFile.path;
+        }
+        await uploadProfilePicture(pickedFile.name);
       }
     } catch (e) {
       Get.snackbar("Image Picking Error", e.toString());
     }
   }
 
-  Future<void> uploadProfilePicture() async {
-    if (pickedImagePath.value.isEmpty) return;
+  Future<void> uploadProfilePicture(String fileName) async {
+    if (pickedImagePath.value.isEmpty && pickedImageBytes.value == null) return;
 
     isLoading.value = true;
-    Get.snackbar("Uploading", "Attempting to upload picture...");
+    Get.snackbar("Uploading", "Your profile picture is being updated...");
 
     final user = auth.currentUser;
     if (user == null) {
@@ -136,14 +149,18 @@ class ProfileController extends GetxController {
 
     try {
       final String uniqueFileName =
-          '${user.uid}-${DateTime.now().millisecondsSinceEpoch}${extension(pickedImagePath.value)}';
+          '${user.uid}-${DateTime.now().millisecondsSinceEpoch}${extension(fileName)}';
       final ref = storage
           .ref()
           .child('images')
           .child(user.uid)
           .child(uniqueFileName);
 
-      await ref.putFile(File(pickedImagePath.value));
+      if (kIsWeb) {
+        await ref.putData(pickedImageBytes.value!);
+      } else {
+        await ref.putFile(File(pickedImagePath.value));
+      }
 
       final newUrl = await ref.getDownloadURL();
 
@@ -152,6 +169,10 @@ class ProfileController extends GetxController {
       });
 
       profileImageUrl.value = newUrl;
+      // Reset pickers
+      pickedImagePath.value = '';
+      pickedImageBytes.value = null;
+
       Get.snackbar("Success!", "Profile picture updated.");
     } catch (e, s) {
       developer.log(
@@ -160,11 +181,7 @@ class ProfileController extends GetxController {
         error: e,
         stackTrace: s,
       );
-      Get.snackbar(
-        "Upload Error",
-        "Could not upload file: ${e.toString()}",
-        duration: const Duration(seconds: 10), // Give time to read the error
-      );
+      Get.snackbar("Upload Error", "Could not upload file: ${e.toString()}");
     } finally {
       isLoading.value = false;
     }

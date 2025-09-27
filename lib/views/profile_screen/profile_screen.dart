@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:badges/badges.dart' as badges;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:myapp/consts/consts.dart';
@@ -190,12 +192,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               title: const Text("Messages",
                   style: TextStyle(fontFamily: semibold, color: darkFontGrey)),
               onTap: () {
-                // Optimistic update
-                profileController.unreadMessageCount.value = 0;
-
-                // Background database update
                 profileController.markMessagesAsRead();
-
                 Get.to(() => ChatScreen(
                       friendName: "admin",
                       friendId: "QsoApR4yrPSCqZLOxcagt26k38n2",
@@ -215,8 +212,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               title: const Text("Log out",
                   style: TextStyle(fontFamily: semibold, color: darkFontGrey)),
               onTap: () async {
-                Get.delete<ProfileController>();
-                Get.delete<CartController>();
                 await authController.signOutMethod();
                 Get.offAll(() => const LoginScreen());
               },
@@ -229,7 +224,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _showChangePasswordDialog(
       BuildContext context, AuthController controller) {
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
     final oldPasswordController = TextEditingController();
     final newPasswordController = TextEditingController();
     final confirmPasswordController = TextEditingController();
@@ -240,7 +235,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return AlertDialog(
           title: const Text('Change Password'),
           content: Form(
-            key: _formKey,
+            key: formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -290,7 +285,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             ElevatedButton(
               onPressed: () {
-                if (_formKey.currentState!.validate()) {
+                if (formKey.currentState!.validate()) {
                    controller.changePassword(
                     oldPasswordController.text,
                     newPasswordController.text,
@@ -305,7 +300,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       },
     );
   }
-
 
   void _showEditProfileDialog(
       BuildContext context, ProfileController controller) {
@@ -329,19 +323,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundColor: Colors.grey.shade300,
-                          backgroundImage:
-                              controller.profileImageUrl.value.isNotEmpty
-                                  ? NetworkImage(
-                                      controller.profileImageUrl.value)
-                                  : null,
-                          child: controller.profileImageUrl.value.isEmpty
-                              ? const Icon(Icons.person,
-                                  size: 50, color: Colors.white)
-                              : null,
-                        ),
+                        Obx(() {
+                          ImageProvider? backgroundImage;
+                          if (kIsWeb && controller.pickedImageBytes.value != null) {
+                            backgroundImage = MemoryImage(controller.pickedImageBytes.value!);
+                          } else if (!kIsWeb && controller.pickedImagePath.value.isNotEmpty) {
+                            backgroundImage = FileImage(File(controller.pickedImagePath.value));
+                          } else if (controller.profileImageUrl.value.isNotEmpty) {
+                            backgroundImage = NetworkImage(controller.profileImageUrl.value);
+                          }
+
+                          return CircleAvatar(
+                            radius: 40,
+                            backgroundColor: Colors.grey.shade300,
+                            backgroundImage: backgroundImage,
+                            child: backgroundImage == null
+                                ? const Icon(Icons.person, size: 50, color: Colors.white)
+                                : null,
+                          );
+                        }),
                         if (controller.isLoading.value)
                           const CircularProgressIndicator(),
                         if (!controller.isLoading.value)
@@ -371,10 +371,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () async {
-                await controller.updateProfile(
-                    newName: nameController.text);
+                // Update name only, image is uploaded on pick
+                if (nameController.text != controller.userName.value) {
+                  await controller.updateProfile(newName: nameController.text);
+                }
                 Navigator.pop(context);
               },
               child: const Text('Save'),
