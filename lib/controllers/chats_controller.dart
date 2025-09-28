@@ -46,6 +46,8 @@ class ChatsController extends GetxController {
         'users': [currentId, friendId],
         'friend_name': friendName,
         'sender_name': senderName,
+        'admin_unread_count': 0,
+        'user_unread_count': 0,
       });
     }
 
@@ -68,6 +70,7 @@ class ChatsController extends GetxController {
         await chatDocument.update({
           'last_msg': msg,
           'last_msg_time': FieldValue.serverTimestamp(),
+          'admin_unread_count': FieldValue.increment(1),
         });
       }
     }

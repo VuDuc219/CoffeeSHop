@@ -42,6 +42,10 @@ class ChatController extends GetxController {
                   'users': {friendId: null, currentId.value: null},
                   'friend_name': friendName,
                   'sender_name': senderName.value,
+                  // Initialize fields for the new chat
+                  'last_msg': '',
+                  'last_msg_time': FieldValue.serverTimestamp(),
+                  'admin_unread_count': 0,
                 })
                 .then((value) => {chatDocId = value});
           }
@@ -50,10 +54,18 @@ class ChatController extends GetxController {
 
   sendMessage(String msg) async {
     if (msg.trim().isNotEmpty) {
+      // 1. Add the new message
       chats.doc(chatDocId).collection(messagesCollection).add({
         'created_on': FieldValue.serverTimestamp(),
         'msg': msg,
         'uid': currentId.value,
+      });
+
+      // 2. Update the parent chat document
+      chats.doc(chatDocId).update({
+        'last_msg': msg,
+        'last_msg_time': FieldValue.serverTimestamp(),
+        'admin_unread_count': FieldValue.increment(1),
       });
     }
   }

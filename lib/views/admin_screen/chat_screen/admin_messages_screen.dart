@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -26,11 +25,10 @@ class AdminMessagesScreen extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        // 1. ORDER BY last_msg_time to show latest conversations first
         stream: firestore
             .collection(chatsCollection)
             .where('users', arrayContains: currentAdminId)
-            .orderBy('last_msg_time', descending: true) 
+            .orderBy('last_msg_time', descending: true)
             .snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {
@@ -76,18 +74,17 @@ class AdminMessagesScreen extends StatelessWidget {
               }
 
               String lastMsg = data['last_msg'] ?? 'No messages yet';
-              // 2. GET UNREAD COUNT and TIMESTAMP
               int unreadCount = data['admin_unread_count'] ?? 0;
               Timestamp? lastMsgTime = data['last_msg_time'];
 
               return FutureBuilder<DocumentSnapshot>(
                 future: firestore.collection(usersCollection).doc(friendId).get(),
                 builder: (context, userSnapshot) {
-                  Widget leadingWidget;
+                  Widget avatarWidget;
                   String finalFriendName;
 
                   if (userSnapshot.connectionState == ConnectionState.waiting) {
-                    leadingWidget = CircleAvatar(
+                    avatarWidget = CircleAvatar(
                       radius: 28,
                       backgroundColor: Colors.grey.shade200,
                     );
@@ -96,7 +93,7 @@ class AdminMessagesScreen extends StatelessWidget {
                     var userData = userSnapshot.data!.data() as Map<String, dynamic>?;
                     finalFriendName = userData?['name'] ?? 'Name Not Available';
                     String friendImageUrl = userData?['imageUrl'] ?? '';
-                    leadingWidget = CircleAvatar(
+                    avatarWidget = CircleAvatar(
                       radius: 28,
                       backgroundColor: Colors.brown.shade100,
                       backgroundImage: friendImageUrl.isNotEmpty ? NetworkImage(friendImageUrl) : null,
@@ -105,7 +102,7 @@ class AdminMessagesScreen extends StatelessWidget {
                           : null,
                     );
                   } else {
-                    leadingWidget = CircleAvatar(
+                    avatarWidget = CircleAvatar(
                       radius: 28,
                       backgroundColor: Colors.grey.shade300,
                       child: const Icon(Icons.person_off_outlined, color: Colors.black54, size: 30),
@@ -115,7 +112,16 @@ class AdminMessagesScreen extends StatelessWidget {
 
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    leading: leadingWidget,
+                    leading: badges.Badge(
+                      showBadge: unreadCount > 0,
+                      position: badges.BadgePosition.topEnd(top: 0, end: 0),
+                      badgeContent: Text(
+                        unreadCount.toString(),
+                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                      badgeStyle: const badges.BadgeStyle(badgeColor: Colors.red),
+                      child: avatarWidget,
+                    ),
                     title: Text(
                       finalFriendName,
                       style: TextStyle(
@@ -132,34 +138,14 @@ class AdminMessagesScreen extends StatelessWidget {
                         color: unreadCount > 0 ? Colors.brown : Colors.grey[600],
                       ),
                     ),
-                    // 3. ADD BADGE and TIMESTAMP
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        if (lastMsgTime != null)
-                          Text(
+                    trailing: (lastMsgTime != null)
+                        ? Text(
                             timeago.format(lastMsgTime.toDate(), locale: 'en_short'),
                             style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                          ),
-                        const SizedBox(height: 4),
-                        if (unreadCount > 0)
-                          badges.Badge(
-                            badgeContent: Text(
-                              unreadCount.toString(),
-                              style: const TextStyle(color: Colors.white, fontSize: 12),
-                            ),
-                            badgeStyle: const badges.BadgeStyle(
-                              badgeColor: Colors.red,
-                            ),
                           )
-                        else
-                          const SizedBox(height: 18), // Placeholder to keep alignment
-                      ],
-                    ),
+                        : null,
                     onTap: () {
                       if (userSnapshot.hasData && userSnapshot.data!.exists) {
-                        // 4. RESET UNREAD COUNT on tap
                         if (unreadCount > 0) {
                           firestore.collection(chatsCollection).doc(doc.id).update({
                             'admin_unread_count': 0,
