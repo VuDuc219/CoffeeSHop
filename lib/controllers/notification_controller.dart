@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
-import 'package:myapp/consts/firebase_consts.dart';
 import 'package:myapp/controllers/cart_controller.dart';
-import 'package:myapp/controllers/messages_controller.dart';
+import 'package:myapp/controllers/profile_controller.dart';
 import 'package:myapp/views/cart_screen/cart_screen.dart';
 import 'package:myapp/views/chat_screen/chat_screen.dart';
 
@@ -23,44 +22,35 @@ class NotificationController extends GetxController {
 
   int get totalNotifications => notifications.length;
 
-  final MessagesController _messagesController = Get.find<MessagesController>();
+  final ProfileController _profileController = Get.find<ProfileController>();
   final CartController _cartController = Get.find<CartController>();
 
   @override
   void onInit() {
     super.onInit();
 
-    // Listeners for reactive changes
-    ever(_messagesController.unreadCount, (_) => _updateMessageNotification());
+    ever(_profileController.unreadMessageCount, (_) => _updateMessageNotification());
     ever(_cartController.products, (_) => _updateCartNotification());
 
-    // Initial check
     _updateMessageNotification();
     _updateCartNotification();
   }
 
   void _updateMessageNotification() {
-    // Remove any existing message notification to avoid duplicates
     notifications.removeWhere((notification) => notification.type == 'message');
 
-    if (_messagesController.unreadCount.value > 0) {
+    if (_profileController.unreadMessageCount.value > 0) {
       const String adminId = "QsoApR4yrPSCqZLOxcagt26k38n2";
-      final String currentUserId = auth.currentUser!.uid;
-
-      // Create the consistent chat document ID
-      final chatDocId = currentUserId.compareTo(adminId) > 0
-          ? '$currentUserId-$adminId'
-          : '$adminId-$currentUserId';
 
       notifications.add(
         NotificationModel(
           title: "You have a new message",
           subtitle:
-              "You have ${_messagesController.unreadCount.value} unread message(s). Tap to view.",
+              "You have ${_profileController.unreadMessageCount.value} unread message(s). Tap to view.",
           onTap: () {
             notifications.removeWhere((n) => n.type == 'message');
 
-            _messagesController.markMessagesAsRead(chatDocId);
+            _profileController.markMessagesAsRead();
 
             Get.to(() => ChatScreen(friendName: "admin", friendId: adminId));
           },
