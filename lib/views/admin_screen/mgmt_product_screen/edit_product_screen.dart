@@ -13,6 +13,7 @@ class EditProductScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final EditProductController controller = Get.put(EditProductController(productData));
+    final _formKey = GlobalKey<FormState>();
 
     return Obx(() => Scaffold(
           appBar: AppBar(
@@ -27,7 +28,9 @@ class EditProductScreen extends StatelessWidget {
                     )
                   : TextButton(
                       onPressed: () {
-                        controller.updateProduct(context);
+                        if (_formKey.currentState!.validate()) {
+                            controller.updateProduct(context);
+                        }
                       },
                       child: const Text('Save', style: TextStyle(color: Colors.white, fontSize: 16)),
                     )
@@ -37,6 +40,7 @@ class EditProductScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
               child: Form(
+                key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -44,6 +48,12 @@ class EditProductScreen extends StatelessWidget {
                     TextFormField(
                       controller: controller.nameController,
                       decoration: const InputDecoration(border: OutlineInputBorder()),
+                       validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter a product name';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     const Text('Description', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -51,6 +61,12 @@ class EditProductScreen extends StatelessWidget {
                       controller: controller.descController,
                       maxLines: 3,
                       decoration: const InputDecoration(border: OutlineInputBorder()),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter a description';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     const Text('Price (comma-separated)', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -58,6 +74,22 @@ class EditProductScreen extends StatelessWidget {
                       controller: controller.priceController,
                       keyboardType: TextInputType.text,
                       decoration: const InputDecoration(border: OutlineInputBorder()),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter at least one price';
+                        }
+                         if (!RegExp(r'^[\d,\s]+$').hasMatch(value)) {
+                          return 'Invalid format. Use only positive integers and commas';
+                        }
+                        var prices = value.split(',');
+                        for (var priceStr in prices) {
+                          final price = int.tryParse(priceStr.trim());
+                          if (price == null || price <= 0) {
+                            return 'All prices must be positive integers';
+                          }
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     const Text('Sizes (comma-separated)', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -72,13 +104,42 @@ class EditProductScreen extends StatelessWidget {
                       controller: controller.quantityController,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(border: OutlineInputBorder()),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter a quantity';
+                        }
+                        if (value.contains('.') || value.contains(',')) {
+                            return 'Quantity must be a whole number';
+                        }
+                        final quantity = int.tryParse(value.trim());
+                        if (quantity == null || quantity <= 0) {
+                          return 'Quantity must be a positive integer';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     const Text('Sale Percentage', style: TextStyle(fontWeight: FontWeight.bold)),
                     TextFormField(
                       controller: controller.saleController,
-                      keyboardType: TextInputType.number,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       decoration: const InputDecoration(border: OutlineInputBorder()),
+                       validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return null; // Allowed to be empty
+                        }
+                        final sale = num.tryParse(value.trim());
+                        if (sale == null) {
+                          return 'Please enter a valid number';
+                        }
+                        if (sale < 0) {
+                          return 'Sale percentage cannot be negative';
+                        }
+                        if (sale > 100) {
+                          return 'Sale percentage cannot exceed 100';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     Row(

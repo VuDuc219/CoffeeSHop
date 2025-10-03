@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:myapp/consts/firebase_consts.dart';
 import 'package:myapp/controllers/cart_controller.dart';
+import 'package:myapp/controllers/home_controller.dart';
+import 'package:myapp/controllers/notification_controller.dart';
 import 'package:myapp/controllers/profile_controller.dart';
 
 class AuthController extends GetxController {
@@ -61,9 +63,8 @@ class AuthController extends GetxController {
     required String password,
     required String email,
   }) async {
-    DocumentReference store = firestore
-        .collection(usersCollection)
-        .doc(auth.currentUser!.uid);
+    DocumentReference store =
+        firestore.collection(usersCollection).doc(auth.currentUser!.uid);
     await store.set({
       'id': auth.currentUser!.uid,
       'name': name,
@@ -113,9 +114,18 @@ class AuthController extends GetxController {
   Future<void> signOutMethod() async {
     try {
       await auth.signOut();
+      // Reset all controllers
       if (Get.isRegistered<ProfileController>()) {
         Get.delete<ProfileController>(force: true);
+      }
+      if (Get.isRegistered<CartController>()) {
         Get.delete<CartController>(force: true);
+      }
+      if (Get.isRegistered<HomeController>()) {
+        Get.delete<HomeController>(force: true);
+      }
+      if (Get.isRegistered<NotificationController>()) {
+        Get.delete<NotificationController>(force: true);
       }
     } catch (e) {
       Get.snackbar("Error signing out", e.toString());

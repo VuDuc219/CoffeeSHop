@@ -46,18 +46,44 @@ class ShippingDetails extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
-          if (controller.addressController.text.isNotEmpty &&
-              controller.phoneController.text.isNotEmpty) {
-            Get.to(() => const PaymentMethods());
-          } else {
+          if (controller.addressController.text.isEmpty) {
             Get.snackbar(
               "Error",
-              "Please fill all fields",
+              "Please enter your address",
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: Colors.red,
               colorText: Colors.white,
             );
+            return;
           }
+
+          if (controller.phoneController.text.isEmpty) {
+            Get.snackbar(
+              "Error",
+              "Please enter your phone number",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+            );
+            return;
+          }
+
+          // Vietnamese phone number validation using regex
+          final phoneRegExp = RegExp(r'^(0|\+84|84)?(3[2-9]|5[25689]|7[06789]|8[1-689]|9[0-46-9])\d{7}$');
+
+
+          if (!phoneRegExp.hasMatch(controller.phoneController.text)) {
+            Get.snackbar(
+              "Error",
+              "Invalid Vietnamese phone number format",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+            );
+            return;
+          }
+
+          Get.to(() => const PaymentMethods());
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: golden,

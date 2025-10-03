@@ -178,9 +178,16 @@ class _SignupScreenState extends State<SignupScreen> {
             ),
           ),
           validator: (value) {
-            if (value == null || value.isEmpty) return '$label cannot be empty';
-            if (label == 'Email' && !value.contains('@')) {
-              return 'Invalid email';
+            if (value == null || value.isEmpty) {
+              return '$label cannot be empty';
+            }
+            if (label == 'Email') {
+              // Regular expression for a valid email format
+              final emailRegExp =
+                  RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+              if (!emailRegExp.hasMatch(value)) {
+                return 'Please enter a valid email address';
+              }
             }
             if (label == 'Retype Password' &&
                 value != _passwordController.text) {
