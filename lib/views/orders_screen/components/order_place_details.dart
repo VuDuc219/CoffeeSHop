@@ -11,11 +11,14 @@ Widget orderPlaceDetails({title1, title2, d1, d2}) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title1, style: const TextStyle(fontFamily: semibold)),
-            Text(d1, style: const TextStyle(color: redColor, fontFamily: semibold)),
+            Text(
+              d1,
+              style: const TextStyle(color: redColor, fontFamily: semibold),
+            ),
           ],
         ),
         SizedBox(
-          width: 150, // Adjusted width for better spacing
+          width: 150,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -23,7 +26,7 @@ Widget orderPlaceDetails({title1, title2, d1, d2}) {
               Text(d2, style: const TextStyle()),
             ],
           ),
-        )
+        ),
       ],
     ),
   );

@@ -58,12 +58,10 @@ class AuthController extends GetxController {
     return userCredential;
   }
 
-  storeUserData({
-    required String name,
-    required String email,
-  }) async {
-    DocumentReference store =
-        firestore.collection(usersCollection).doc(auth.currentUser!.uid);
+  storeUserData({required String name, required String email}) async {
+    DocumentReference store = firestore
+        .collection(usersCollection)
+        .doc(auth.currentUser!.uid);
     await store.set({
       'id': auth.currentUser!.uid,
       'name': name,
@@ -112,7 +110,6 @@ class AuthController extends GetxController {
   Future<void> signOutMethod() async {
     try {
       await auth.signOut();
-      // Reset all controllers
       if (Get.isRegistered<ProfileController>()) {
         Get.delete<ProfileController>(force: true);
       }

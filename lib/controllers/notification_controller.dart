@@ -29,7 +29,10 @@ class NotificationController extends GetxController {
   void onInit() {
     super.onInit();
 
-    ever(_profileController.unreadMessageCount, (_) => _updateMessageNotification());
+    ever(
+      _profileController.unreadMessageCount,
+      (_) => _updateMessageNotification(),
+    );
     ever(_cartController.products, (_) => _updateCartNotification());
 
     _updateMessageNotification();

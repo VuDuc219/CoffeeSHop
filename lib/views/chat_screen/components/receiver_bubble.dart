@@ -6,7 +6,7 @@ Widget receiverBubble(BuildContext context, {required String message, required S
     margin: const EdgeInsets.only(bottom: 8),
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
-      color: Colors.grey.shade300, // Grey color for receiver
+      color: Colors.grey.shade300,
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(20),
         topRight: Radius.circular(20),

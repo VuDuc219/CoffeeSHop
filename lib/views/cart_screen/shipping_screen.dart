@@ -68,9 +68,9 @@ class ShippingDetails extends StatelessWidget {
             return;
           }
 
-          // Vietnamese phone number validation using regex
-          final phoneRegExp = RegExp(r'^(0|\+84|84)?(3[2-9]|5[25689]|7[06789]|8[1-689]|9[0-46-9])\d{7}$');
-
+          final phoneRegExp = RegExp(
+            r'^(0|\+84|84)?(3[2-9]|5[25689]|7[06789]|8[1-689]|9[0-46-9])\d{7}$',
+          );
 
           if (!phoneRegExp.hasMatch(controller.phoneController.text)) {
             Get.snackbar(

@@ -54,14 +54,12 @@ class ChatController extends GetxController {
 
   sendMessage(String msg) async {
     if (msg.trim().isNotEmpty) {
-      // 1. Add the new message
       chats.doc(chatDocId).collection(messagesCollection).add({
         'created_on': FieldValue.serverTimestamp(),
         'msg': msg,
         'uid': currentId.value,
       });
 
-      // 2. Update the parent chat document
       chats.doc(chatDocId).update({
         'last_msg': msg,
         'last_msg_time': FieldValue.serverTimestamp(),

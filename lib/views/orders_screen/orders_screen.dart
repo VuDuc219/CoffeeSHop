@@ -36,7 +36,6 @@ class OrdersScreen extends StatelessWidget {
             return ListView.builder(
               itemCount: data.length,
               itemBuilder: (BuildContext context, int index) {
-                // It's safer to cast to a Map
                 var orderData = data[index].data() as Map<String, dynamic>;
 
                 return ListTile(
@@ -63,7 +62,6 @@ class OrdersScreen extends StatelessWidget {
                     style: const TextStyle(fontFamily: regular),
                   ),
                   trailing: Text(
-                    // Using the reliable intl package for currency
                     intl.NumberFormat.currency(
                       symbol: "VND ",
                       decimalDigits: 0,
@@ -74,7 +72,6 @@ class OrdersScreen extends StatelessWidget {
                     ),
                   ),
                   onTap: () {
-                    // Pass the document data to the details screen
                     Get.to(() => OrdersDetails(data: data[index]));
                   },
                 );

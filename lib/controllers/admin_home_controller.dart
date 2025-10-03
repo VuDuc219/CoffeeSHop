@@ -5,10 +5,8 @@ import 'package:myapp/consts/firebase_consts.dart';
 enum TimeRange { Day, Week, Month }
 
 class AdminHomeController extends GetxController {
-  // For Navigation
   var navIndex = 0.obs;
 
-  // For Dashboard
   var timeRange = TimeRange.Week.obs;
   var orders = <DocumentSnapshot>[].obs;
   var totalRevenue = 0.0.obs;
@@ -29,7 +27,7 @@ class AdminHomeController extends GetxController {
     DateTime now = DateTime.now();
     switch (timeRange.value) {
       case TimeRange.Day:
-        return DateTime(now.year, now.month, now.day); // Start of today
+        return DateTime(now.year, now.month, now.day);
       case TimeRange.Week:
         return now.subtract(const Duration(days: 7));
       case TimeRange.Month:
@@ -37,7 +35,6 @@ class AdminHomeController extends GetxController {
     }
   }
 
-  // Function to determine the interval for the chart's bottom axis
   double getChartInterval() {
     switch (timeRange.value) {
       case TimeRange.Day:
@@ -54,7 +51,10 @@ class AdminHomeController extends GetxController {
       DateTime startDate = getStartDate();
       var snapshot = await firestore
           .collection(ordersCollection)
-          .where('order_date', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where(
+            'order_date',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
+          )
           .get();
 
       orders.value = snapshot.docs;
@@ -98,9 +98,17 @@ class AdminHomeController extends GetxController {
         DateTime orderDate = orderTimestamp.toDate();
 
         if (timeRange.value == TimeRange.Day) {
-          hourlyOrders.update(orderDate.hour, (value) => value + 1, ifAbsent: () => 1);
+          hourlyOrders.update(
+            orderDate.hour,
+            (value) => value + 1,
+            ifAbsent: () => 1,
+          );
         } else {
-          DateTime dayKey = DateTime(orderDate.year, orderDate.month, orderDate.day);
+          DateTime dayKey = DateTime(
+            orderDate.year,
+            orderDate.month,
+            orderDate.day,
+          );
           dailyOrders.update(dayKey, (value) => value + 1, ifAbsent: () => 1);
         }
       }

@@ -75,7 +75,7 @@ class MessagesController extends GetxController {
         });
       }
     }
-    _recalculateTotalUnreadCount(); // Recalculate after any potential changes
+    _recalculateTotalUnreadCount();
   }
 
   void _recalculateTotalUnreadCount() {

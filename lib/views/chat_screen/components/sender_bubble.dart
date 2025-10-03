@@ -7,7 +7,7 @@ Widget senderBubble(BuildContext context, {required String message, required Str
     margin: const EdgeInsets.only(bottom: 8),
     padding: const EdgeInsets.all(12),
     decoration: const BoxDecoration(
-      color: redColor, // Using redColor for the orange bubble
+      color: redColor,
       borderRadius: BorderRadius.only(
         topLeft: Radius.circular(20),
         topRight: Radius.circular(20),
@@ -22,7 +22,6 @@ Widget senderBubble(BuildContext context, {required String message, required Str
           style: const TextStyle(color: Colors.white, fontSize: 16),
         ),
         const SizedBox(height: 5),
-        // FIXED: Displays the passed-in 'time' instead of the current time.
         Text(
           time,
           style: const TextStyle(color: Colors.white, fontSize: 12),

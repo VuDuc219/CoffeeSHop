@@ -8,7 +8,7 @@ Widget detailsCard({
 }) {
   return SizedBox(
     width: width,
-    height: 80, // Added a fixed height for consistency
+    height: 80,
     child: Card(
       elevation: 3,
       shadowColor: Colors.black.withOpacity(0.3),
@@ -31,7 +31,6 @@ Widget detailsCard({
               ),
             ),
             const SizedBox(height: 5),
-            // Use FittedBox to ensure text fits on one line
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(

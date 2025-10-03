@@ -8,18 +8,17 @@ class NotificationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get the instance of the NotificationController
     final NotificationController controller =
         Get.find<NotificationController>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFf5f5f5), // A light grey background
+      backgroundColor: const Color(0xFFf5f5f5),
       appBar: AppBar(
         title: const Text(
           "Notifications",
           style: TextStyle(fontFamily: semibold, color: Colors.white),
         ),
-        backgroundColor: const Color(0xFF6f4e37), // Consistent brown theme
+        backgroundColor: const Color(0xFF6f4e37),
         elevation: 1,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -27,9 +26,7 @@ class NotificationScreen extends StatelessWidget {
         ),
       ),
       body: Obx(() {
-        // Use Obx to automatically rebuild the widget when the notifications list changes
         if (controller.notifications.isEmpty) {
-          // Show a message if there are no notifications
           return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

@@ -21,19 +21,31 @@ class EditProductController extends GetxController {
   late TextEditingController saleController;
 
   var isFeatured = false.obs;
-  var pImagesList = Rx<List<XFile>>([]); 
-  var pImagesLinks = [].obs; 
+  var pImagesList = Rx<List<XFile>>([]);
+  var pImagesLinks = [].obs;
 
   EditProductController(DocumentSnapshot doc) {
     docId = doc.id;
     final data = doc.data() as Map<String, dynamic>;
 
-    nameController = TextEditingController(text: data['p_name']?.toString() ?? '');
-    descController = TextEditingController(text: data['p_desc']?.toString() ?? '');
-    priceController = TextEditingController(text: (data['p_price'] as List?)?.join(', ') ?? '');
-    quantityController = TextEditingController(text: data['p_quantity']?.toString() ?? '');
-    sizeController = TextEditingController(text: (data['p_size'] as List?)?.join(', ') ?? '');
-    saleController = TextEditingController(text: data['p_sale']?.toString() ?? '');
+    nameController = TextEditingController(
+      text: data['p_name']?.toString() ?? '',
+    );
+    descController = TextEditingController(
+      text: data['p_desc']?.toString() ?? '',
+    );
+    priceController = TextEditingController(
+      text: (data['p_price'] as List?)?.join(', ') ?? '',
+    );
+    quantityController = TextEditingController(
+      text: data['p_quantity']?.toString() ?? '',
+    );
+    sizeController = TextEditingController(
+      text: (data['p_size'] as List?)?.join(', ') ?? '',
+    );
+    saleController = TextEditingController(
+      text: data['p_sale']?.toString() ?? '',
+    );
     isFeatured.value = data['is_featured'] ?? false;
     pImagesLinks.value = List<String>.from(data['p_imgs'] ?? []);
   }
@@ -64,7 +76,8 @@ class EditProductController extends GetxController {
     List<String> newImageLinks = [];
     for (var image in pImagesList.value) {
       var filename = basename(image.path);
-      var destination = 'images/products/${DateTime.now().millisecondsSinceEpoch}_$filename';
+      var destination =
+          'images/products/${DateTime.now().millisecondsSinceEpoch}_$filename';
       Reference ref = FirebaseStorage.instance.ref().child(destination);
 
       if (kIsWeb) {
@@ -72,7 +85,7 @@ class EditProductController extends GetxController {
       } else {
         await ref.putFile(File(image.path));
       }
-      
+
       var n = await ref.getDownloadURL();
       newImageLinks.add(n);
     }
@@ -84,11 +97,20 @@ class EditProductController extends GetxController {
     try {
       List<String> newUploadedLinks = await uploadImages();
 
-      // Convert text fields to the correct data types before saving
-      final List<String> priceList = priceController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
-      final List<int> priceIntList = priceList.map((e) => int.tryParse(e) ?? 0).toList();
+      final List<String> priceList = priceController.text
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+      final List<int> priceIntList = priceList
+          .map((e) => int.tryParse(e) ?? 0)
+          .toList();
 
-      final List<String> sizeList = sizeController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      final List<String> sizeList = sizeController.text
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
 
       final int quantity = int.tryParse(quantityController.text) ?? 0;
       final num sale = num.tryParse(saleController.text) ?? 0;
@@ -96,11 +118,11 @@ class EditProductController extends GetxController {
       var product = {
         'is_featured': isFeatured.value,
         'p_desc': descController.text,
-        'p_imgs': [...pImagesLinks, ...newUploadedLinks], 
+        'p_imgs': [...pImagesLinks, ...newUploadedLinks],
         'p_name': nameController.text,
         'p_price': priceIntList, // Save as a list of integers
-        'p_quantity': quantity,   // Save as an integer
-        'p_sale': sale,           // Save as a number
+        'p_quantity': quantity, // Save as an integer
+        'p_sale': sale, // Save as a number
         'p_size': sizeList,
       };
 
@@ -109,7 +131,6 @@ class EditProductController extends GetxController {
       isloading(false);
       Get.snackbar('Success', 'Product updated successfully!');
       Get.back();
-
     } catch (e) {
       isloading(false);
       Get.snackbar('Error', 'Failed to update product: ${e.toString()}');
