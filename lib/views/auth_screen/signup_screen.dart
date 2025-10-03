@@ -280,7 +280,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   if (userCredential != null) {
                     await controller.storeUserData(
                       email: _emailController.text,
-                      password: _passwordController.text,
                       name: _nameController.text,
                     );
 

@@ -60,7 +60,6 @@ class AuthController extends GetxController {
 
   storeUserData({
     required String name,
-    required String password,
     required String email,
   }) async {
     DocumentReference store =
@@ -68,7 +67,6 @@ class AuthController extends GetxController {
     await store.set({
       'id': auth.currentUser!.uid,
       'name': name,
-      'password': password,
       'email': email,
       'imageUrl': '',
       'cart_count': '00',
