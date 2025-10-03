@@ -19,7 +19,7 @@ class _ItemDetailsState extends State<ItemDetails> {
   late final ProductController productController;
   late final ItemDetailsController ratingController;
   bool isWishlist = false;
-  double _currentRating = 0.0; // To hold the user's tentative rating before submitting
+  double _currentRating = 0.0;
 
   @override
   void initState() {
@@ -30,7 +30,6 @@ class _ItemDetailsState extends State<ItemDetails> {
       widget.data['p_sale'],
     );
 
-    // Initialize the new rating controller
     ratingController = Get.put(ItemDetailsController(productId: widget.data['id']));
 
     List<dynamic> wishlist = widget.data['p_wishlist'] ?? [];
@@ -101,7 +100,6 @@ class _ItemDetailsState extends State<ItemDetails> {
                 const SizedBox(height: 20),
                 Text(productName, style: const TextStyle(fontFamily: bold, fontSize: 24, color: darkFontGrey)),
                 const SizedBox(height: 10),
-                // WIDGET FOR AVERAGE RATING
                 Obx(() => Row(
                       children: [
                         RatingBar.builder(
@@ -136,10 +134,7 @@ class _ItemDetailsState extends State<ItemDetails> {
                   );
                 }),
                 const SizedBox(height: 20),
-                
-                // REPLACEMENT FOR THE OLD RATING SECTION
                 _buildUserRatingSection(),
-
                 const SizedBox(height: 20),
                 const Text('Sizes', style: TextStyle(fontFamily: bold, fontSize: 18, color: darkFontGrey)),
                 const SizedBox(height: 10),
@@ -188,41 +183,61 @@ class _ItemDetailsState extends State<ItemDetails> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Obx(() => Text('${productController.totalPrice.value} VND', style: const TextStyle(fontFamily: bold, fontSize: 24, color: redColor))),
-            SizedBox(
-              width: 180,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                   if (auth.currentUser == null) {
-                      Get.snackbar("Login Required", "You must be logged in to add items to the cart.");
-                      return;
-                   }
-                  final String selectedSize = sizes.isNotEmpty ? sizes[productController.sizeIndex.value].toString() : 'Default Size';
-                  productController.addToCart(
-                    title: productName,
-                    img: detailImageUrl,
-                    size: selectedSize,
-                    qty: productController.quantity.value,
-                    tprice: productController.totalPrice.value,
-                    context: context,
-                  );
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: golden, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                child: const Text('Add to Cart', style: TextStyle(fontFamily: bold, fontSize: 18, color: Colors.white)),
-              ),
-            ),
+            availableStock > 0
+                ? SizedBox(
+                    width: 180,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (auth.currentUser == null) {
+                          Get.snackbar("Login Required", "You must be logged in to add items to the cart.");
+                          return;
+                        }
+                        final String selectedSize = sizes.isNotEmpty ? sizes[productController.sizeIndex.value].toString() : 'Default Size';
+                        productController.addToCart(
+                          title: productName,
+                          img: detailImageUrl,
+                          size: selectedSize,
+                          qty: productController.quantity.value,
+                          tprice: productController.totalPrice.value,
+                          context: context,
+                          productId: docId,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(backgroundColor: golden, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                      child: const Text('Add to Cart', style: TextStyle(fontFamily: bold, fontSize: 18, color: Colors.white)),
+                    ),
+                  )
+                : Container(
+                    width: 180,
+                    height: 50,
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Out of Stock',
+                        style: TextStyle(
+                          fontFamily: bold,
+                          fontSize: 18,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ),
+                  ),
           ],
         ),
       ),
     );
   }
 
-  // New widget for the user rating section
   Widget _buildUserRatingSection() {
     return Obx(() {
-       if (auth.currentUser == null) {
-         return const SizedBox.shrink(); // Don't show anything if not logged in
-       }
+      if (auth.currentUser == null) {
+        return const SizedBox.shrink();
+      }
 
       _currentRating = ratingController.yourRating.value;
 
@@ -266,7 +281,7 @@ class _ItemDetailsState extends State<ItemDetails> {
             alignment: Alignment.centerRight,
             child: Obx(() => ElevatedButton(
                   onPressed: ratingController.isSubmitting.value
-                      ? null // Disable button while submitting
+                      ? null
                       : () {
                           ratingController.submitRating(_currentRating);
                         },

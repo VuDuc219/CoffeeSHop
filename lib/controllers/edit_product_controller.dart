@@ -28,12 +28,12 @@ class EditProductController extends GetxController {
     docId = doc.id;
     final data = doc.data() as Map<String, dynamic>;
 
-    nameController = TextEditingController(text: data['p_name'] ?? '');
-    descController = TextEditingController(text: data['p_desc'] ?? '');
+    nameController = TextEditingController(text: data['p_name']?.toString() ?? '');
+    descController = TextEditingController(text: data['p_desc']?.toString() ?? '');
     priceController = TextEditingController(text: (data['p_price'] as List?)?.join(', ') ?? '');
-    quantityController = TextEditingController(text: data['p_quantity'] ?? '');
+    quantityController = TextEditingController(text: data['p_quantity']?.toString() ?? '');
     sizeController = TextEditingController(text: (data['p_size'] as List?)?.join(', ') ?? '');
-    saleController = TextEditingController(text: data['p_sale'] ?? '');
+    saleController = TextEditingController(text: data['p_sale']?.toString() ?? '');
     isFeatured.value = data['is_featured'] ?? false;
     pImagesLinks.value = List<String>.from(data['p_imgs'] ?? []);
   }
@@ -84,15 +84,24 @@ class EditProductController extends GetxController {
     try {
       List<String> newUploadedLinks = await uploadImages();
 
+      // Convert text fields to the correct data types before saving
+      final List<String> priceList = priceController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      final List<int> priceIntList = priceList.map((e) => int.tryParse(e) ?? 0).toList();
+
+      final List<String> sizeList = sizeController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+
+      final int quantity = int.tryParse(quantityController.text) ?? 0;
+      final num sale = num.tryParse(saleController.text) ?? 0;
+
       var product = {
         'is_featured': isFeatured.value,
         'p_desc': descController.text,
         'p_imgs': [...pImagesLinks, ...newUploadedLinks], 
         'p_name': nameController.text,
-        'p_price': priceController.text.split(',').map((e) => e.trim()).toList(),
-        'p_quantity': quantityController.text,
-        'p_sale': saleController.text,
-        'p_size': sizeController.text.split(',').map((e) => e.trim()).toList(),
+        'p_price': priceIntList, // Save as a list of integers
+        'p_quantity': quantity,   // Save as an integer
+        'p_sale': sale,           // Save as a number
+        'p_size': sizeList,
       };
 
       await firestore.collection(productsCollection).doc(docId).update(product);

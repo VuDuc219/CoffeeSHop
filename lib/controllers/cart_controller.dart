@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:myapp/consts/firebase_consts.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/controllers/home_controller.dart';
+import 'package:myapp/views/home_screen/home.dart';
 
 class CartController extends GetxController {
   final RxList<DocumentSnapshot> products = <DocumentSnapshot>[].obs;
@@ -84,46 +85,78 @@ class CartController extends GetxController {
     firestore.collection(cartCollection).doc(docId).delete();
   }
 
-  Future<bool> placeMyOrder({
+  Future<void> placeMyOrder({
     required String orderPaymentMethod,
     required int totalAmount,
   }) async {
     placingOrder(true);
-    bool success = false;
+
     try {
-      await firestore.collection(ordersCollection).doc().set({
-        'order_code':
-            "${DateTime.now().millisecondsSinceEpoch}${Random().nextInt(100)}",
-        'order_date': FieldValue.serverTimestamp(),
-        'order_by': auth.currentUser!.uid,
-        'order_by_name':
-            Get.find<HomeController>().username.value,
-        'order_by_email': auth.currentUser!.email,
-        'order_by_address': addressController.text,
-        'order_by_phone': phoneController.text,
-        'shipping_method': "Home Delivery",
-        'payment_method': orderPaymentMethod,
-        'order_placed': true,
-        'total_amount': totalAmount,
-        'orders': FieldValue.arrayUnion(
-          productSnapshot.map((e) {
-            final data = e.data() as Map<String, dynamic>;
-            return {
-              'img': data['img'],
-              'qty': data['qty'],
-              'size': data['size'] ?? 'N/A',
-              'title': data['title'],
-            };
-          }).toList(),
-        ),
+      await firestore.runTransaction((transaction) async {
+        final cartDocs = productSnapshot;
+        if (cartDocs == null || cartDocs.isEmpty) {
+          throw Exception("Your cart is empty.");
+        }
+
+        for (var cartItem in cartDocs) {
+          final cartData = cartItem.data() as Map<String, dynamic>;
+          final productId = cartData['product_id'];
+          final requestedQty = cartData['qty'] as int;
+
+          DocumentReference productRef = firestore.collection(productsCollection).doc(productId);
+          DocumentSnapshot productDoc = await transaction.get(productRef);
+
+          if (!productDoc.exists) {
+            throw Exception("Product ${cartData['title']} not found.");
+          }
+
+          final productData = productDoc.data() as Map<String, dynamic>;
+          final currentStock = int.tryParse(productData['p_quantity'].toString()) ?? 0;
+
+          if (currentStock < requestedQty) {
+            throw Exception("Sorry, '${productData['p_name']}' is out of stock or not enough quantity.");
+          }
+
+          final newStock = currentStock - requestedQty;
+          transaction.update(productRef, {'p_quantity': newStock});
+        }
+
+        DocumentReference orderDoc = firestore.collection(ordersCollection).doc();
+        transaction.set(orderDoc, {
+          'order_code': "${DateTime.now().millisecondsSinceEpoch}${Random().nextInt(100)}",
+          'order_date': FieldValue.serverTimestamp(),
+          'order_by': auth.currentUser!.uid,
+          'order_by_name': Get.find<HomeController>().username.value,
+          'order_by_email': auth.currentUser!.email,
+          'order_by_address': addressController.text,
+          'order_by_phone': phoneController.text,
+          'shipping_method': "Home Delivery",
+          'payment_method': orderPaymentMethod,
+          'order_placed': true,
+          'total_amount': totalAmount,
+          'orders': FieldValue.arrayUnion(
+            cartDocs.map((e) {
+              final data = e.data() as Map<String, dynamic>;
+              return {
+                'img': data['img'],
+                'qty': data['qty'],
+                'size': data['size'] ?? 'N/A',
+                'title': data['title'],
+              };
+            }).toList(),
+          ),
+        });
       });
-      success = true;
+
+      await clearCart();
+      Get.snackbar("Success", "Your order has been placed successfully!");
+      Get.offAll(() => const Home());
+
     } catch (e) {
-      Get.snackbar("Error", "Failed to place order: ${e.toString()}");
-      success = false;
+      Get.snackbar("Order Failed", e.toString().replaceFirst("Exception: ", ""));
+    } finally {
+      placingOrder(false);
     }
-    placingOrder(false);
-    return success;
   }
 
   Future<void> clearCart() async {

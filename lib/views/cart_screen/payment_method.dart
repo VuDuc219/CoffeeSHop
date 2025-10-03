@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:myapp/consts/consts.dart';
 import 'package:myapp/controllers/cart_controller.dart';
-import 'package:myapp/views/home_screen/home.dart';
 
 class PaymentMethods extends StatelessWidget {
   const PaymentMethods({super.key});
@@ -107,21 +106,13 @@ class PaymentMethods extends StatelessWidget {
               onPressed: controller.placingOrder.value
                   ? null
                   : () async {
-                      bool success = await controller.placeMyOrder(
+                      await controller.placeMyOrder(
                         orderPaymentMethod:
                             paymentMethods[controller
                                 .paymentIndex
                                 .value]['name'],
                         totalAmount: controller.totalP.value,
                       );
-                      if (success) {
-                        await controller.clearCart();
-                        Get.snackbar(
-                          "Success",
-                          "Your order has been placed successfully!",
-                        );
-                        Get.offAll(() => const Home());
-                      }
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: golden,

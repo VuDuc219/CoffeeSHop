@@ -10,7 +10,7 @@ class ProductController extends GetxController {
   var totalPrice = 0.obs;
   var priceList = <int>[].obs;
   var userRating = 0.0.obs;
-  var salePercentage = 0.obs; // To store sale percentage
+  var salePercentage = 0.obs;
 
   addToCart({
     required String title,
@@ -18,6 +18,7 @@ class ProductController extends GetxController {
     required String size,
     required int qty,
     required int tprice,
+    required String productId,
     required BuildContext context,
   }) async {
     try {
@@ -28,6 +29,7 @@ class ProductController extends GetxController {
         'qty': qty,
         'tprice': tprice,
         'added_by': auth.currentUser!.uid,
+        'product_id': productId,
       });
       VxToast.show(context, msg: "Added to cart");
     } catch (e) {
@@ -78,7 +80,6 @@ class ProductController extends GetxController {
     }
   }
 
-  // Method to get the original price before discount
   int getOriginalPrice() {
     if (priceList.isNotEmpty && sizeIndex.value < priceList.length) {
       return priceList[sizeIndex.value] * quantity.value;
