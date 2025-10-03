@@ -62,6 +62,7 @@ class CartScreen extends StatelessWidget {
                   final tprice = (itemData['tprice'] as num? ?? 0).toInt();
                   final qty = (itemData['qty'] as num? ?? 1).toInt();
                   final unitPrice = (qty > 0) ? tprice ~/ qty : 0;
+                  final productId = itemData['product_id'];
 
                   return Card(
                     elevation: 4,
@@ -113,6 +114,7 @@ class CartScreen extends StatelessWidget {
                                 docId: item.id,
                                 newQuantity: qty - 1,
                                 unitPrice: unitPrice,
+                                productId: productId,
                               );
                             },
                           ),
@@ -124,6 +126,7 @@ class CartScreen extends StatelessWidget {
                                 docId: item.id,
                                 newQuantity: qty + 1,
                                 unitPrice: unitPrice,
+                                productId: productId,
                               );
                             },
                           ),

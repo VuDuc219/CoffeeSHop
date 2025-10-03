@@ -66,20 +66,42 @@ class CartController extends GetxController {
     paymentIndex.value = index;
   }
 
-  void updateQuantity({
+    void updateQuantity({
     required String docId,
     required int newQuantity,
     required int unitPrice,
-  }) {
-    if (newQuantity > 0) {
+    required String productId,
+  }) async {
+    if (newQuantity <= 0) {
+      deleteItem(docId);
+      return;
+    }
+
+    try {
+      DocumentSnapshot productDoc = await firestore.collection(productsCollection).doc(productId).get();
+      if (!productDoc.exists) {
+        Get.snackbar("Error", "Product not found.");
+        return;
+      }
+
+      final productData = productDoc.data() as Map<String, dynamic>;
+      final availableStock = int.tryParse(productData['p_quantity'].toString()) ?? 0;
+
+      if (newQuantity > availableStock) {
+        Get.snackbar("Limit Reached", "Sorry, you can't add more than the available stock.",
+            snackPosition: SnackPosition.TOP, margin: const EdgeInsets.all(10));
+        return;
+      }
+
       firestore.collection(cartCollection).doc(docId).update({
         'qty': newQuantity,
         'tprice': newQuantity * unitPrice,
       });
-    } else {
-      deleteItem(docId);
+    } catch (e) {
+      Get.snackbar("Error", "Failed to update quantity: $e");
     }
   }
+
 
   void deleteItem(String docId) {
     firestore.collection(cartCollection).doc(docId).delete();
