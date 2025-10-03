@@ -258,8 +258,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a new password.';
                     }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters long.';
+                    if (value.length < 8) {
+                      return 'Password must be at least 8 characters long.';
+                    }
+                    if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)').hasMatch(value)) {
+                      return 'Password must contain both letters and numbers.';
                     }
                     return null;
                   },
@@ -269,6 +272,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   obscureText: true,
                   decoration: const InputDecoration(labelText: 'Confirm New Password'),
                   validator: (value) {
+                     if (value == null || value.isEmpty) {
+                      return 'Please confirm your new password.';
+                    }
                     if (value != newPasswordController.text) {
                       return 'Passwords do not match.';
                     }

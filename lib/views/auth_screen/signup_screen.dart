@@ -88,19 +88,9 @@ class _SignupScreenState extends State<SignupScreen> {
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 20),
-            _buildTextField(
-              'Password',
-              _passwordController,
-              Icons.lock_outline,
-              isPassword: true,
-            ),
+            _buildPasswordField('Password', _passwordController, Icons.lock_outline),
             const SizedBox(height: 20),
-            _buildTextField(
-              'Retype Password',
-              _retypePasswordController,
-              Icons.lock_outline,
-              isPassword: true,
-            ),
+            _buildRetypePasswordField('Retype Password', _retypePasswordController, Icons.lock_outline),
             const SizedBox(height: 20),
             Row(
               children: [
@@ -149,7 +139,6 @@ class _SignupScreenState extends State<SignupScreen> {
     String label,
     TextEditingController controller,
     IconData icon, {
-    bool isPassword = false,
     TextInputType keyboardType = TextInputType.text,
   }) {
     return Column(
@@ -165,7 +154,6 @@ class _SignupScreenState extends State<SignupScreen> {
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
-          obscureText: isPassword,
           keyboardType: keyboardType,
           decoration: InputDecoration(
             prefixIcon: Icon(icon, color: const Color(0xFF6f4e37)),
@@ -182,15 +170,92 @@ class _SignupScreenState extends State<SignupScreen> {
               return '$label cannot be empty';
             }
             if (label == 'Email') {
-              // Regular expression for a valid email format
-              final emailRegExp =
-                  RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+              final emailRegExp = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
               if (!emailRegExp.hasMatch(value)) {
                 return 'Please enter a valid email address';
               }
             }
-            if (label == 'Retype Password' &&
-                value != _passwordController.text) {
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPasswordField(
+      String label, TextEditingController controller, IconData icon) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFF6f4e37),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          obscureText: true,
+          decoration: InputDecoration(
+            prefixIcon: Icon(icon, color: const Color(0xFF6f4e37)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: const BorderSide(color: Color(0xFF6f4e37)),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Password cannot be empty';
+            }
+            if (value.length < 8) {
+              return 'Password must be at least 8 characters long.';
+            }
+            if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)').hasMatch(value)) {
+              return 'Password must contain both letters and numbers.';
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRetypePasswordField(
+      String label, TextEditingController controller, IconData icon) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFF6f4e37),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          obscureText: true,
+          decoration: InputDecoration(
+            prefixIcon: Icon(icon, color: const Color(0xFF6f4e37)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: const BorderSide(color: Color(0xFF6f4e37)),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please retype your password';
+            }
+            if (value != _passwordController.text) {
               return 'Passwords do not match';
             }
             return null;
