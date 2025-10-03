@@ -20,12 +20,19 @@ class SpecialScreen extends StatelessWidget {
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (!snapshot.hasData) {
             return Center(child: loadingIndicator());
-          } else if (snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text("No products on sale"),
-            );
           } else {
-            var data = snapshot.data!.docs;
+            var allProducts = snapshot.data!.docs;
+            var saleProducts = allProducts.where((product) {
+              num salePercentage = num.tryParse(product['p_sale'].toString()) ?? 0;
+              return salePercentage > 0;
+            }).toList();
+
+            if (saleProducts.isEmpty) {
+              return const Center(
+                child: Text("No products on sale right now"),
+              );
+            }
+
             return GridView.builder(
               physics: const BouncingScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -34,9 +41,9 @@ class SpecialScreen extends StatelessWidget {
                 crossAxisSpacing: 8,
                 mainAxisExtent: 250,
               ),
-              itemCount: data.length,
+              itemCount: saleProducts.length,
               itemBuilder: (context, index) {
-                var product = data[index];
+                var product = saleProducts[index];
                 var productData = product.data() as Map<String, dynamic>;
                 productData['id'] = product.id;
 
@@ -44,10 +51,7 @@ class SpecialScreen extends StatelessWidget {
                     num.tryParse(product['p_price'][0].toString()) ?? 0;
                 num salePercentage =
                     num.tryParse(product['p_sale'].toString()) ?? 0;
-                num salePrice = originalPrice;
-                if (salePercentage > 0) {
-                  salePrice = originalPrice * (1 - salePercentage / 100);
-                }
+                num salePrice = originalPrice * (1 - salePercentage / 100);
 
                 return GestureDetector(
                   onTap: () {
@@ -83,14 +87,13 @@ class SpecialScreen extends StatelessWidget {
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            if (salePercentage > 0)
-                              Text(
-                                '${originalPrice.toStringAsFixed(0)}đ',
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  decoration: TextDecoration.lineThrough,
-                                ),
+                            Text(
+                              '${originalPrice.toStringAsFixed(0)}đ',
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                decoration: TextDecoration.lineThrough,
                               ),
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               '${salePrice.toStringAsFixed(0)}đ',

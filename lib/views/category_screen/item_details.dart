@@ -157,6 +157,8 @@ class _ItemDetailsState extends State<ItemDetails> {
                 Row(
                   children: [
                     const Text('Quantity', style: TextStyle(fontFamily: bold, fontSize: 18, color: darkFontGrey)),
+                    const SizedBox(width: 10),
+                     Text('(Stock: $availableStock)', style: const TextStyle(fontFamily: semibold, fontSize: 14, color: fontGrey)),
                     const Spacer(),
                     IconButton(onPressed: productController.decreaseQuantity, icon: const Icon(Icons.remove_circle_outline)),
                     Obx(() => Text('${productController.quantity.value}', style: const TextStyle(fontSize: 18, fontFamily: bold))),

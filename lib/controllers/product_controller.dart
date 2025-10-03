@@ -57,6 +57,13 @@ class ProductController extends GetxController {
     if (quantity.value < availableStock) {
       quantity.value++;
       calculateTotalPrice();
+    } else {
+      Get.snackbar(
+        "Limit Reached",
+        "You can't add more than the available stock.",
+        snackPosition: SnackPosition.TOP,
+        margin: const EdgeInsets.all(10),
+      );
     }
   }
 

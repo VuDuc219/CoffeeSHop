@@ -120,14 +120,24 @@ class CartController extends GetxController {
           throw Exception("Your cart is empty.");
         }
 
+        List<Future<DocumentSnapshot>> productDocFutures = [];
         for (var cartItem in cartDocs) {
           final cartData = cartItem.data() as Map<String, dynamic>;
           final productId = cartData['product_id'];
-          final requestedQty = cartData['qty'] as int;
-
           DocumentReference productRef = firestore.collection(productsCollection).doc(productId);
-          DocumentSnapshot productDoc = await transaction.get(productRef);
+          productDocFutures.add(transaction.get(productRef));
+        }
+        List<DocumentSnapshot> productDocs = await Future.wait(productDocFutures);
 
+        List<Map<String, dynamic>> writeOperations = [];
+
+        for (int i = 0; i < cartDocs.length; i++) {
+          var cartItem = cartDocs[i];
+          var productDoc = productDocs[i];
+
+          final cartData = cartItem.data() as Map<String, dynamic>;
+          final requestedQty = cartData['qty'] as int;
+          
           if (!productDoc.exists) {
             throw Exception("Product ${cartData['title']} not found.");
           }
@@ -140,7 +150,14 @@ class CartController extends GetxController {
           }
 
           final newStock = currentStock - requestedQty;
-          transaction.update(productRef, {'p_quantity': newStock});
+          writeOperations.add({
+            'ref': productDoc.reference,
+            'data': {'p_quantity': newStock}
+          });
+        }
+
+        for (var op in writeOperations) {
+          transaction.update(op['ref'], op['data']);
         }
 
         DocumentReference orderDoc = firestore.collection(ordersCollection).doc();
