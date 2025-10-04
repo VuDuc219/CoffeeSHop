@@ -27,7 +27,10 @@ class ChatController extends GetxController {
   }
 
   getSenderName() async {
-    var userDoc = await firestore.collection(usersCollection).doc(currentId).get();
+    var userDoc = await firestore
+        .collection(usersCollection)
+        .doc(currentId)
+        .get();
     if (userDoc.exists) {
       senderName = userDoc.data()?['name'] ?? 'Unknown User';
     } else {
