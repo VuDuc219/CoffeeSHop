@@ -79,18 +79,19 @@ class _SignupScreenState extends State<SignupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildTextField('Name', _nameController, Icons.person_outline),
+            _buildTextField('Name', _nameController, Icons.person_outline, hint: 'Enter your name'),
             const SizedBox(height: 20),
             _buildTextField(
               'Email',
               _emailController,
               Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
+              hint: 'Enter your email',
             ),
             const SizedBox(height: 20),
-            _buildPasswordField('Password', _passwordController, Icons.lock_outline),
+            _buildPasswordField('Password', _passwordController, Icons.lock_outline, hint: 'Enter your password'),
             const SizedBox(height: 20),
-            _buildRetypePasswordField('Retype Password', _retypePasswordController, Icons.lock_outline),
+            _buildRetypePasswordField('Retype Password', _retypePasswordController, Icons.lock_outline, hint: 'Retype your password'),
             const SizedBox(height: 20),
             Row(
               children: [
@@ -140,6 +141,7 @@ class _SignupScreenState extends State<SignupScreen> {
     TextEditingController controller,
     IconData icon, {
     TextInputType keyboardType = TextInputType.text,
+    String? hint,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,6 +158,7 @@ class _SignupScreenState extends State<SignupScreen> {
           controller: controller,
           keyboardType: keyboardType,
           decoration: InputDecoration(
+            hintText: hint,
             prefixIcon: Icon(icon, color: const Color(0xFF6f4e37)),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.0),
@@ -183,7 +186,7 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildPasswordField(
-      String label, TextEditingController controller, IconData icon) {
+      String label, TextEditingController controller, IconData icon, {String? hint}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -199,6 +202,7 @@ class _SignupScreenState extends State<SignupScreen> {
           controller: controller,
           obscureText: true,
           decoration: InputDecoration(
+            hintText: hint,
             prefixIcon: Icon(icon, color: const Color(0xFF6f4e37)),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.0),
@@ -226,7 +230,7 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildRetypePasswordField(
-      String label, TextEditingController controller, IconData icon) {
+      String label, TextEditingController controller, IconData icon, {String? hint}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -242,6 +246,7 @@ class _SignupScreenState extends State<SignupScreen> {
           controller: controller,
           obscureText: true,
           decoration: InputDecoration(
+            hintText: hint,
             prefixIcon: Icon(icon, color: const Color(0xFF6f4e37)),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.0),
